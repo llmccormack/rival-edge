@@ -85,7 +85,9 @@ cp .env.example .env        # then add your ANTHROPIC_API_KEY
 python app.py
 ```
 
-Open http://127.0.0.1:5000.
+Open http://127.0.0.1:5001.
+
+The default port is 5001 rather than Flask's usual 5000, which the macOS AirPlay Receiver occupies. Override it with `PORT=5002 python app.py` if 5001 is also taken.
 
 ### Configuration
 
@@ -93,6 +95,7 @@ Open http://127.0.0.1:5000.
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | yes | Anthropic API credentials |
 | `RIVAL_EDGE_FALLBACKS` | no | Set to `0` to disable server-side refusal fallbacks |
+| `PORT` | no | Port to serve on (default `5001`) |
 
 ---
 

@@ -432,7 +432,19 @@ def build_comparison_pdf(payload: Dict[str, Any]) -> bytes:
 
 
 if __name__ == "__main__":
+    # 5001 by default, not Flask's usual 5000: on macOS the AirPlay Receiver
+    # holds port 5000, which makes the server look broken for no good reason.
+    port = int(os.getenv("PORT", "5001"))
+
     if not os.getenv("ANTHROPIC_API_KEY"):
         print("\n  Warning: ANTHROPIC_API_KEY is not set.")
         print("  Copy .env.example to .env and add your key, then restart.\n")
-    app.run(host="127.0.0.1", port=5000, debug=True)
+
+    print(f"\n  Rival Edge running at http://127.0.0.1:{port}\n")
+
+    try:
+        app.run(host="127.0.0.1", port=port, debug=True)
+    except OSError as exc:
+        print(f"\n  Could not bind to port {port}: {exc}")
+        print(f"  Something else is using it. Try:  PORT=5002 python app.py\n")
+        raise SystemExit(1)
