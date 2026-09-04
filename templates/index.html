@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rival Edge — AI Financial Document Analyzer</title>
+  <meta name="description"
+        content="Turn earnings call transcripts and 10-K filings into structured equity research summaries.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230b1b2b'/><path d='M8 21l5-6 4 3 7-9' stroke='%230f8a81' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="shell masthead__inner">
+    <div class="brand">
+      <div class="brand__mark" aria-hidden="true">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 17l5-6 4 3 7-9"/>
+        </svg>
+      </div>
+      <div class="brand__name">Rival <span>Edge</span></div>
+    </div>
+    <div class="masthead__meta"><span class="dot"></span> Analysis engine: Claude Opus 5</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="shell">
+    <h1>Read a filing the way an analyst does — in about a minute.</h1>
+    <p>
+      Paste an earnings call transcript or upload a 10-K. Rival Edge extracts the numbers,
+      the guidance, the risks and the tone, and returns a structured research note you can
+      export as a PDF.
+    </p>
+    <ul class="hero__tags">
+      <li>Earnings calls</li>
+      <li>10-K filings</li>
+      <li>Quarter-over-quarter comparison</li>
+      <li>PDF export</li>
+    </ul>
+  </div>
+</section>
+
+<main class="shell">
+  <div class="panel">
+    <div class="tabs" role="tablist" aria-label="Analysis mode">
+      <button class="tab" role="tab" id="tab-single" aria-controls="pane-single" aria-selected="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/>
+          <path d="M8 13h8M8 17h5"/>
+        </svg>
+        Single document
+      </button>
+      <button class="tab" role="tab" id="tab-compare" aria-controls="pane-compare" aria-selected="false">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v18"/><path d="M6 8H3v8h3z"/><path d="M21 6h-3v12h3z"/>
+        </svg>
+        Compare quarters
+      </button>
+    </div>
+
+    <div class="panel__body">
+      <!-- ------------------------------------------------ single document -->
+      <div id="pane-single" role="tabpanel" aria-labelledby="tab-single">
+        <div class="field-label">
+          <span>Earnings call transcript or 10-K</span>
+          <span class="counter" data-counter-for="text">0 characters</span>
+        </div>
+        <textarea id="text" name="text" spellcheck="false"
+                  placeholder="Paste the full transcript or filing text here…"></textarea>
+        <button type="button" class="dropzone" data-drop="file">
+          <span class="dropzone__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v13"/>
+            </svg>
+          </span>
+          <span>
+            <span class="dropzone__title">Or upload a file</span><br>
+            <span class="dropzone__hint">Drop a .txt or .pdf here, or click to browse</span>
+          </span>
+        </button>
+        <input type="file" id="file" accept=".txt,.pdf" hidden>
+      </div>
+
+      <!-- ----------------------------------------------- compare quarters -->
+      <div id="pane-compare" role="tabpanel" aria-labelledby="tab-compare" hidden>
+        <div class="compare-grid">
+          <div>
+            <div class="field-label">
+              <span class="period-tag">Earlier period</span>
+              <span class="counter" data-counter-for="text_a">0 characters</span>
+            </div>
+            <textarea id="text_a" spellcheck="false"
+                      placeholder="Paste the earlier quarter's transcript…"></textarea>
+            <button type="button" class="dropzone" data-drop="file_a">
+              <span class="dropzone__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v13"/>
+                </svg>
+              </span>
+              <span>
+                <span class="dropzone__title">Or upload a file</span><br>
+                <span class="dropzone__hint">.txt or .pdf</span>
+              </span>
+            </button>
+            <input type="file" id="file_a" accept=".txt,.pdf" hidden>
+          </div>
+          <div>
+            <div class="field-label">
+              <span class="period-tag">Later period</span>
+              <span class="counter" data-counter-for="text_b">0 characters</span>
+            </div>
+            <textarea id="text_b" spellcheck="false"
+                      placeholder="Paste the more recent quarter's transcript…"></textarea>
+            <button type="button" class="dropzone" data-drop="file_b">
+              <span class="dropzone__icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v13"/>
+                </svg>
+              </span>
+              <span>
+                <span class="dropzone__title">Or upload a file</span><br>
+                <span class="dropzone__hint">.txt or .pdf</span>
+              </span>
+            </button>
+            <input type="file" id="file_b" accept=".txt,.pdf" hidden>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn btn--primary" id="run">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3l2.2 5.9L20 11l-5.8 2.1L12 19l-2.2-5.9L4 11l5.8-2.1z"/>
+          </svg>
+          <span id="run-label">Analyze document</span>
+        </button>
+        <span class="actions__hint" id="run-hint">A full 10-K can take a minute or two.</span>
+      </div>
+
+      <div class="alert" id="alert" role="alert">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>
+        </svg>
+        <span id="alert-text"></span>
+      </div>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner" aria-hidden="true"></div>
+      <div>
+        <div class="loading__title">Analyzing…</div>
+        <div class="loading__step" id="loading-step">Reading the document</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------------------ results -->
+  <section class="results" id="results" aria-live="polite">
+    <div class="results__bar">
+      <h2 id="results-title">Analysis</h2>
+      <button type="button" class="btn btn--ghost" id="export">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>
+        </svg>
+        Download PDF
+      </button>
+    </div>
+    <div id="results-body"></div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="shell site-footer__inner">
+    <span>Rival Edge — a Rival Automations project. &copy; {{ year }}</span>
+    <span>AI-generated analysis for research support only. Not investment advice.</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------------------------------------------------------------- helpers
+
+  const $ = (selector) => document.querySelector(selector);
+
+  const escapeHtml = (value) => String(value == null ? "" : value)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+  const ICONS = {
+    building: '<path d="M3 21h18"/><path d="M5 21V5a2 2 0 012-2h6a2 2 0 012 2v16"/><path d="M15 21V9h4a2 2 0 012 2v10"/><path d="M9 7h2M9 11h2M9 15h2"/>',
+    revenue: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+    growth: '<path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>',
+    compass: '<circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2.5 6.4-6.4 2.5 2.5-6.4z"/>',
+    risk: '<path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+    opportunity: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    quote: '<path d="M3 21c3 0 7-1 7-8V5a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2h3"/><path d="M14 21c3 0 7-1 7-8V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v6a2 2 0 002 2h3"/>',
+    scale: '<path d="M12 3v18"/><path d="M6 8H3v8h3z"/><path d="M21 6h-3v12h3z"/>',
+    eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+    info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>'
+  };
+
+  const icon = (name, size) => `<svg width="${size || 16}" height="${size || 16}" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">${ICONS[name] || ""}</svg>`;
+
+  const card = (iconName, title, bodyHtml, wide) => `
+    <article class="card${wide ? " card--wide" : ""}">
+      <div class="card__head">
+        <span class="card__icon">${icon(iconName)}</span>
+        <h3 class="card__title">${escapeHtml(title)}</h3>
+      </div>
+      <div class="card__body">${bodyHtml}</div>
+    </article>`;
+
+  const rankedList = (items) => `<ol class="ranked">${
+    (items || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")
+  }</ol>`;
+
+  const plainList = (items, emptyText) => (items && items.length)
+    ? `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+    : `<p class="empty">${escapeHtml(emptyText)}</p>`;
+
+  const slug = (value) => String(value || "").toLowerCase().replace(/[^a-z]/g, "");
+
+  // ------------------------------------------------------------ tab state
+
+  let mode = "single";
+  const files = {};
+
+  const setMode = (next) => {
+    mode = next;
+    $("#tab-single").setAttribute("aria-selected", String(next === "single"));
+    $("#tab-compare").setAttribute("aria-selected", String(next === "compare"));
+    $("#pane-single").hidden = next !== "single";
+    $("#pane-compare").hidden = next === "single";
+    $("#run-label").textContent = next === "single" ? "Analyze document" : "Compare quarters";
+    $("#run-hint").textContent = next === "single"
+      ? "A full 10-K can take a minute or two."
+      : "Both documents are analyzed, then compared — expect a longer run.";
+    hideAlert();
+  };
+
+  $("#tab-single").addEventListener("click", () => setMode("single"));
+  $("#tab-compare").addEventListener("click", () => setMode("compare"));
+
+  // ------------------------------------------------------- inputs & files
+
+  document.querySelectorAll("textarea").forEach((field) => {
+    const counter = document.querySelector(`[data-counter-for="${field.id}"]`);
+    field.addEventListener("input", () => {
+      counter.textContent = `${field.value.length.toLocaleString()} characters`;
+    });
+  });
+
+  document.querySelectorAll("[data-drop]").forEach((zone) => {
+    const inputId = zone.dataset.drop;
+    const input = document.getElementById(inputId);
+
+    const attach = (file) => {
+      if (!file) return;
+      if (!/\.(txt|pdf)$/i.test(file.name)) {
+        showAlert("Only .txt and .pdf files are supported.");
+        return;
+      }
+      files[inputId] = file;
+      zone.classList.add("has-file");
+      zone.querySelector(".dropzone__title").textContent = file.name;
+      zone.querySelector(".dropzone__hint").textContent =
+        `${(file.size / 1024).toFixed(0)} KB — click to replace`;
+      hideAlert();
+    };
+
+    zone.addEventListener("click", () => input.click());
+    input.addEventListener("change", () => attach(input.files[0]));
+
+    ["dragenter", "dragover"].forEach((event) => zone.addEventListener(event, (e) => {
+      e.preventDefault();
+      zone.classList.add("is-over");
+    }));
+    ["dragleave", "drop"].forEach((event) => zone.addEventListener(event, (e) => {
+      e.preventDefault();
+      zone.classList.remove("is-over");
+    }));
+    zone.addEventListener("drop", (e) => attach(e.dataTransfer.files[0]));
+  });
+
+  // ------------------------------------------------------------ ui state
+
+  const STEPS = [
+    "Reading the document",
+    "Extracting financial figures",
+    "Assessing guidance and risk language",
+    "Weighing management sentiment",
+    "Writing the analyst note"
+  ];
+  let stepTimer = null;
+
+  const setBusy = (busy) => {
+    $("#loading").classList.toggle("is-active", busy);
+    $("#run").disabled = busy;
+    $("#export").disabled = busy;
+    clearInterval(stepTimer);
+    if (busy) {
+      let index = 0;
+      $("#loading-step").textContent = STEPS[0];
+      stepTimer = setInterval(() => {
+        index = Math.min(index + 1, STEPS.length - 1);
+        $("#loading-step").textContent = STEPS[index];
+      }, 6500);
+    }
+  };
+
+  const showAlert = (message) => {
+    $("#alert-text").textContent = message;
+    $("#alert").classList.add("is-active");
+  };
+
+  const hideAlert = () => $("#alert").classList.remove("is-active");
+
+  // ------------------------------------------------------------ rendering
+
+  let lastResult = null;
+
+  function renderAnalysis(data) {
+    const meta = [data.document_type, data.reporting_period]
+      .filter(Boolean).map((part) => `<span>${escapeHtml(part)}</span>`).join("");
+
+    const chunkNote = (data._meta && data._meta.chunked)
+      ? `<div class="note-strip">${icon("info", 14)} Long document — condensed from
+         ${data._meta.chunks} sections before the final analysis pass.</div>`
+      : "";
+
+    return `
+      <div class="summary-card">
+        <div class="summary-card__head">
+          <div>
+            <h3>${escapeHtml(data.company_name)}</h3>
+            <div class="summary-card__meta">${meta}</div>
+          </div>
+          <span class="badge badge--${slug(data.sentiment)}">${escapeHtml(data.sentiment)}</span>
+        </div>
+        <div class="summary-card__note">${escapeHtml(data.analyst_summary)}</div>
+        <div class="summary-card__reason">${escapeHtml(data.sentiment_reasoning)}</div>
+      </div>
+
+      <div class="card-grid">
+        ${card("building", "Company overview", `<p>${escapeHtml(data.company_overview)}</p>`)}
+        ${card("revenue", "Revenue & earnings", `<p>${escapeHtml(data.revenue_performance)}</p>`)}
+        ${card("growth", "Year-over-year", `<p>${escapeHtml(data.yoy_growth)}</p>`)}
+        ${card("compass", "Guidance & outlook", `<p>${escapeHtml(data.management_guidance)}</p>`)}
+        ${card("risk", "Top risks", rankedList(data.top_risks))}
+        ${card("opportunity", "Top opportunities", rankedList(data.top_opportunities))}
+        ${card("quote", "Key executive quotes", (data.key_quotes || []).map((entry) => `
+          <blockquote class="quote">
+            <p>“${escapeHtml(entry.quote)}”</p>
+            <cite>${escapeHtml(entry.speaker)}</cite>
+          </blockquote>`).join(""), true)}
+      </div>
+      ${chunkNote}`;
+  }
+
+  function renderComparison(payload) {
+    const { earlier, later, comparison } = payload;
+    const earlierLabel = earlier.reporting_period || "Earlier";
+    const laterLabel = later.reporting_period || "Later";
+
+    const rows = (comparison.deltas || []).map((delta) => `
+      <tr>
+        <td data-label="Metric">${escapeHtml(delta.metric)}</td>
+        <td data-label="${escapeHtml(earlierLabel)}">${escapeHtml(delta.earlier)}</td>
+        <td data-label="${escapeHtml(laterLabel)}">${escapeHtml(delta.later)}
+          <span class="delta-note">${escapeHtml(delta.commentary)}</span></td>
+        <td data-label="Direction">
+          <span class="trend trend--${escapeHtml(delta.direction)}">
+            ${delta.direction === "up" ? "▲" : delta.direction === "down" ? "▼" : "—"}
+            ${escapeHtml(delta.direction)}
+          </span>
+        </td>
+      </tr>`).join("");
+
+    return `
+      <div class="summary-card">
+        <div class="summary-card__head">
+          <div>
+            <h3>${escapeHtml(later.company_name || earlier.company_name)}</h3>
+            <div class="summary-card__meta">
+              <span>${escapeHtml(earlierLabel)} → ${escapeHtml(laterLabel)}</span>
+              <span>${escapeHtml(earlier.sentiment)} → ${escapeHtml(later.sentiment)}</span>
+            </div>
+          </div>
+          <span class="badge badge--${slug(comparison.trajectory)}">${escapeHtml(comparison.trajectory)}</span>
+        </div>
+        <div class="summary-card__note">${escapeHtml(comparison.headline)}</div>
+        <div class="summary-card__reason">${escapeHtml(comparison.sentiment_shift)}</div>
+      </div>
+
+      <div class="card-grid">
+        ${card("scale", "What changed", `
+          <table class="delta-table">
+            <thead><tr>
+              <th>Metric</th><th>${escapeHtml(earlierLabel)}</th>
+              <th>${escapeHtml(laterLabel)}</th><th>Direction</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>`, true)}
+        ${card("compass", "Guidance change", `<p>${escapeHtml(comparison.guidance_change)}</p>`)}
+        ${card("quote", "Tone of management", `<p>${escapeHtml(comparison.tone_change)}</p>`)}
+        ${card("risk", "Risk profile", `
+          <div class="side-by-side">
+            <div class="mini-card">
+              <h4>New this period</h4>
+              ${plainList(comparison.new_risks, "No new risks introduced.")}
+            </div>
+            <div class="mini-card">
+              <h4>No longer emphasized</h4>
+              ${plainList(comparison.resolved_risks, "Nothing dropped from the prior period.")}
+            </div>
+          </div>`, true)}
+        ${card("eye", "What to watch next quarter", rankedList(comparison.what_to_watch), true)}
+      </div>`;
+  }
+
+  // --------------------------------------------------------------- submit
+
+  async function run() {
+    hideAlert();
+    const body = new FormData();
+
+    if (mode === "single") {
+      if (!$("#text").value.trim() && !files.file) {
+        showAlert("Paste a transcript or upload a file first.");
+        return;
+      }
+      body.append("text", $("#text").value);
+      if (files.file) body.append("file", files.file);
+    } else {
+      const hasEarlier = $("#text_a").value.trim() || files.file_a;
+      const hasLater = $("#text_b").value.trim() || files.file_b;
+      if (!hasEarlier || !hasLater) {
+        showAlert("Both periods are required to run a comparison.");
+        return;
+      }
+      body.append("text_a", $("#text_a").value);
+      body.append("text_b", $("#text_b").value);
+      if (files.file_a) body.append("file_a", files.file_a);
+      if (files.file_b) body.append("file_b", files.file_b);
+    }
+
+    setBusy(true);
+    $("#results").classList.remove("is-active");
+
+    try {
+      const response = await fetch(mode === "single" ? "/api/analyze" : "/api/compare", {
+        method: "POST",
+        body
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        showAlert(data.error || "The analysis failed. Try again.");
+        return;
+      }
+
+      lastResult = { mode, data };
+      $("#results-title").textContent =
+        mode === "single" ? "Analysis" : "Period comparison";
+      $("#results-body").innerHTML =
+        mode === "single" ? renderAnalysis(data) : renderComparison(data);
+      $("#results").classList.add("is-active");
+      $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (error) {
+      showAlert("Could not reach the server. Is the Flask app still running?");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  $("#run").addEventListener("click", run);
+
+  // --------------------------------------------------------------- export
+
+  $("#export").addEventListener("click", async () => {
+    if (!lastResult) return;
+    const button = $("#export");
+    button.disabled = true;
+
+    try {
+      const response = await fetch("/api/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(lastResult)
+      });
+      if (!response.ok) {
+        showAlert("The PDF could not be generated.");
+        return;
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = (response.headers.get("Content-Disposition") || "")
+        .split("filename=").pop().replace(/"/g, "") || "rival-edge-report.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      button.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>
