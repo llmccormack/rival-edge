@@ -6,10 +6,10 @@ handling needed to turn a raw earnings-call transcript or 10-K into a
 structured equity-research summary.
 
 Public surface:
-    analyze_document(text)            -> dict   (single-document analysis)
-    compare_documents(text_a, text_b) -> dict   (two-period comparison)
-    extract_text_from_pdf(stream)     -> str
-    AnalyzerError                              (user-presentable failure)
+    analyze_document(text, progress)            -> dict
+    compare_documents(text_a, text_b, progress) -> dict
+    extract_text_from_pdf(stream)               -> str
+    AnalyzerError                                  user-presentable failure
 """
 
 from __future__ import annotations
@@ -17,7 +17,12 @@ from __future__ import annotations
 import json
 import os
 import re
-from typing import Any, Dict, List
+import threading
+import time
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
+from typing import Any
 
 import anthropic
 
@@ -26,57 +31,122 @@ import anthropic
 # --------------------------------------------------------------------------
 
 MODEL = "claude-opus-5"
+MODEL_LABEL = "Claude Opus 5"
 
-# Server-side refusal fallback: if a safety classifier declines the request,
-# the API transparently re-runs it on a fallback model inside the same call
-# instead of returning an empty result. Set RIVAL_EDGE_FALLBACKS=0 to disable.
+# Server-side refusal fallback: if a safety classifier declines a request, the
+# API re-runs it on a fallback model inside the same call instead of returning
+# nothing. Set RIVAL_EDGE_FALLBACKS=0 to disable.
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
-USE_FALLBACKS = os.getenv("RIVAL_EDGE_FALLBACKS", "1") != "0"
 
-MAX_TOKENS = 8_000
+# Opus 5 thinks by default and thinking tokens count toward max_tokens, so the
+# ceiling has to leave room for reasoning over a long filing. Safe to set high
+# because every request streams.
+MAX_TOKENS = 64_000
 
-# A rough characters-per-token ratio for English prose. Only used to decide
-# whether a document needs chunking — never to truncate content.
+# Rough characters-per-token ratio for English prose. Only used to decide
+# whether a document needs chunking and to report size — never to truncate.
 CHARS_PER_TOKEN = 3.5
 
-# Documents longer than this are condensed chunk-by-chunk before the final
-# analysis pass. Claude Opus 5 has a 1M-token context window, so this limit is
-# about keeping latency and cost sane, not about fitting the model.
+# Documents longer than this are condensed section by section before the final
+# analysis. Claude Opus 5 has a 1M-token context window, so the limit exists to
+# keep latency and cost reasonable, not to fit the model.
 SINGLE_PASS_CHAR_LIMIT = 320_000
 CHUNK_CHARS = 260_000
 CHUNK_OVERLAP = 2_000
 
+# Upper bound on concurrent Claude requests from a single analysis.
+MAX_PARALLEL_CALLS = 4
+
 MIN_DOCUMENT_CHARS = 200
 
+Progress = Callable[[str], None]
+
 _client: anthropic.Anthropic | None = None
+_client_lock = threading.Lock()
 
 
 class AnalyzerError(Exception):
     """An error worth showing to the user verbatim."""
 
 
+def _no_progress(_: str) -> None:
+    pass
+
+
+def fallbacks_enabled() -> bool:
+    return os.getenv("RIVAL_EDGE_FALLBACKS", "1") != "0"
+
+
 def get_client() -> anthropic.Anthropic:
-    """Lazily build the Anthropic client so import never fails on a missing key."""
+    """Build the client lazily so importing this module never needs a key."""
     global _client
-    if _client is None:
-        if not os.getenv("ANTHROPIC_API_KEY"):
-            raise AnalyzerError(
-                "ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add your key."
+    with _client_lock:
+        if _client is None:
+            if not os.getenv("ANTHROPIC_API_KEY"):
+                raise AnalyzerError(
+                    "ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add your key."
+                )
+            # A full 10-K analysis can legitimately run for several minutes.
+            _client = anthropic.Anthropic(timeout=600.0)
+        return _client
+
+
+# --------------------------------------------------------------------------
+# Run statistics
+# --------------------------------------------------------------------------
+
+
+@dataclass
+class RunStats:
+    """Token usage and latency across every Claude call in one user request."""
+
+    calls: int = 0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    models: set[str] = field(default_factory=set)
+    started: float = field(default_factory=time.monotonic)
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
+
+    def record(self, message: Any) -> None:
+        usage = message.usage
+        with self._lock:
+            self.calls += 1
+            self.input_tokens += (
+                (usage.input_tokens or 0)
+                + (getattr(usage, "cache_read_input_tokens", 0) or 0)
+                + (getattr(usage, "cache_creation_input_tokens", 0) or 0)
             )
-        # Analysis of a full 10-K can legitimately run for several minutes.
-        _client = anthropic.Anthropic(timeout=600.0)
-    return _client
+            self.output_tokens += usage.output_tokens or 0
+            self.models.add(message.model)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "calls": self.calls,
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
+            "models": sorted(self.models),
+            "elapsed_seconds": round(time.monotonic() - self.started, 1),
+        }
 
 
 # --------------------------------------------------------------------------
 # Output schemas
 #
-# These are enforced server-side via output_config.format, so the model cannot
-# return prose, markdown fences, or a missing field — the response is always
-# JSON matching the shape below.
+# Enforced server-side via output_config.format: the model cannot return prose,
+# markdown fences, or a missing field. The response is always JSON matching
+# the shape below.
+#
+# Structured outputs reject array minItems/maxItems values other than 0 or 1,
+# so list lengths live in the field descriptions and are enforced in code by
+# LIST_LIMITS below instead.
 # --------------------------------------------------------------------------
 
-ANALYSIS_SCHEMA: Dict[str, Any] = {
+
+def _string_list(description: str) -> dict[str, Any]:
+    return {"type": "array", "items": {"type": "string"}, "description": description}
+
+
+ANALYSIS_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
         "company_name": {"type": "string"},
@@ -95,18 +165,8 @@ ANALYSIS_SCHEMA: Dict[str, Any] = {
         "revenue_performance": {"type": "string"},
         "yoy_growth": {"type": "string"},
         "management_guidance": {"type": "string"},
-        "top_risks": {
-            "type": "array",
-            "items": {"type": "string"},
-            "minItems": 3,
-            "maxItems": 3,
-        },
-        "top_opportunities": {
-            "type": "array",
-            "items": {"type": "string"},
-            "minItems": 3,
-            "maxItems": 3,
-        },
+        "top_risks": _string_list("Exactly 3, most material first."),
+        "top_opportunities": _string_list("Exactly 3, most material first."),
         "key_quotes": {
             "type": "array",
             "items": {
@@ -118,8 +178,7 @@ ANALYSIS_SCHEMA: Dict[str, Any] = {
                 "required": ["speaker", "quote"],
                 "additionalProperties": False,
             },
-            "minItems": 3,
-            "maxItems": 3,
+            "description": "Exactly 3 verbatim quotes.",
         },
         "sentiment": {"type": "string", "enum": ["Bullish", "Neutral", "Bearish"]},
         "sentiment_reasoning": {"type": "string"},
@@ -143,7 +202,7 @@ ANALYSIS_SCHEMA: Dict[str, Any] = {
     "additionalProperties": False,
 }
 
-COMPARISON_SCHEMA: Dict[str, Any] = {
+COMPARISON_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
         "headline": {
@@ -163,31 +222,22 @@ COMPARISON_SCHEMA: Dict[str, Any] = {
                     "metric": {"type": "string"},
                     "earlier": {"type": "string"},
                     "later": {"type": "string"},
-                    "direction": {
-                        "type": "string",
-                        "enum": ["up", "down", "flat", "unclear"],
-                    },
+                    "direction": {"type": "string", "enum": ["up", "down", "flat", "unclear"]},
                     "commentary": {"type": "string"},
                 },
                 "required": ["metric", "earlier", "later", "direction", "commentary"],
                 "additionalProperties": False,
             },
-            "minItems": 3,
-            "maxItems": 6,
+            "description": "3 to 6 of the most decision-relevant metrics.",
         },
-        "new_risks": {"type": "array", "items": {"type": "string"}, "maxItems": 4},
-        "resolved_risks": {"type": "array", "items": {"type": "string"}, "maxItems": 4},
+        "new_risks": _string_list("Up to 4. Empty if none."),
+        "resolved_risks": _string_list("Up to 4. Empty if none."),
         "guidance_change": {"type": "string"},
         "tone_change": {
             "type": "string",
             "description": "How management's language changed, with evidence.",
         },
-        "what_to_watch": {
-            "type": "array",
-            "items": {"type": "string"},
-            "minItems": 3,
-            "maxItems": 3,
-        },
+        "what_to_watch": _string_list("Exactly 3."),
     },
     "required": [
         "headline",
@@ -202,6 +252,27 @@ COMPARISON_SCHEMA: Dict[str, Any] = {
     ],
     "additionalProperties": False,
 }
+
+
+# Maximum list lengths the UI and PDF are designed around. The model usually
+# respects the descriptions, but not always (a comparison once came back with
+# 7 deltas), so results are trimmed to these after parsing.
+LIST_LIMITS: dict[str, int] = {
+    "top_risks": 3,
+    "top_opportunities": 3,
+    "key_quotes": 3,
+    "deltas": 6,
+    "new_risks": 4,
+    "resolved_risks": 4,
+    "what_to_watch": 3,
+}
+
+
+def enforce_list_limits(result: dict[str, Any]) -> dict[str, Any]:
+    for key, limit in LIST_LIMITS.items():
+        if isinstance(result.get(key), list):
+            result[key] = result[key][:limit]
+    return result
 
 
 # --------------------------------------------------------------------------
@@ -246,13 +317,17 @@ conclusions — later stages do that. Never invent a figure that is not present.
 COMPARISON_SYSTEM = """You are a senior equity research analyst writing a \
 quarter-over-quarter comparison note.
 
-You will receive two structured analyses of the same company from two different \
-reporting periods, labelled EARLIER PERIOD and LATER PERIOD. Identify what \
-actually changed: the numbers, the guidance, the risk profile, and the tone of \
-management's language.
+You will receive material for two reporting periods of the same company, \
+labelled earlier_period and later_period. Each contains a structured analysis \
+and the source document it was produced from. Identify what actually changed: \
+the numbers, the guidance, the risk profile, and the tone of management's language.
+
+The analyses are a starting point, not the full record. Check them against the \
+source documents, and use details the analyses left out — a figure disclosed \
+only in Q&A still counts as disclosed.
 
 Rules:
-- Compare like for like. Only cite figures that appear in the analyses provided.
+- Compare like for like. Only cite figures that appear in the material provided.
 - Where a metric is not comparable across the two periods, say so explicitly.
 - "direction" describes movement from the earlier period to the later period.
 - Be blunt about deterioration; do not soften it.
@@ -265,28 +340,31 @@ Return only valid JSON, no other text."""
 # --------------------------------------------------------------------------
 
 
-def _stream_message(**kwargs: Any):
+def _stream_message(**request: Any) -> Any:
     """
-    Run one Claude request, streaming so long documents never hit an HTTP timeout.
+    Run one Claude request to completion.
 
-    Uses the beta endpoint when refusal fallbacks are enabled, the stable one
-    otherwise; the request body is identical apart from the fallback parameters.
+    Streams under the hood so long documents never hit an HTTP timeout. Uses the
+    beta endpoint when refusal fallbacks are on; the request is otherwise identical.
     """
     client = get_client()
-    if USE_FALLBACKS:
-        stream_ctx = client.beta.messages.stream(
-            betas=[FALLBACK_BETA], fallbacks="default", **kwargs
-        )
+    if fallbacks_enabled():
+        stream = client.beta.messages.stream(betas=[FALLBACK_BETA], fallbacks="default", **request)
     else:
-        stream_ctx = client.messages.stream(**kwargs)
+        stream = client.messages.stream(**request)
 
-    with stream_ctx as stream:
-        return stream.get_final_message()
+    with stream as active:
+        return active.get_final_message()
 
 
-def _call_claude(system: str, user_content: str, schema: Dict[str, Any] | None = None) -> Any:
-    """Send one request to Claude and return parsed JSON (or raw text if no schema)."""
-    request: Dict[str, Any] = {
+def _call_claude(
+    system: str,
+    user_content: str,
+    stats: RunStats,
+    schema: dict[str, Any] | None = None,
+) -> Any:
+    """Send one request and return parsed JSON, or raw text when no schema is given."""
+    request: dict[str, Any] = {
         "model": MODEL,
         "max_tokens": MAX_TOKENS,
         "system": system,
@@ -297,22 +375,34 @@ def _call_claude(system: str, user_content: str, schema: Dict[str, Any] | None =
 
     try:
         message = _stream_message(**request)
-    except anthropic.AuthenticationError:
-        raise AnalyzerError("Anthropic rejected the API key. Check ANTHROPIC_API_KEY in .env.")
-    except anthropic.RateLimitError:
-        raise AnalyzerError("Rate limited by the Anthropic API. Wait a moment and try again.")
-    except anthropic.APIConnectionError:
-        raise AnalyzerError("Could not reach the Anthropic API. Check your network connection.")
+    except anthropic.AuthenticationError as exc:
+        raise AnalyzerError(
+            "Anthropic rejected the API key. Check ANTHROPIC_API_KEY in .env."
+        ) from exc
+    except anthropic.RateLimitError as exc:
+        raise AnalyzerError(
+            "Rate limited by the Anthropic API. Wait a moment and try again."
+        ) from exc
+    except anthropic.APIConnectionError as exc:
+        raise AnalyzerError(
+            "Could not reach the Anthropic API. Check your network connection."
+        ) from exc
     except anthropic.BadRequestError as exc:
-        raise AnalyzerError(f"The API rejected this request: {exc.message}")
+        raise AnalyzerError(f"The API rejected this request: {exc.message}") from exc
     except anthropic.APIStatusError as exc:
-        raise AnalyzerError(f"Anthropic API error ({exc.status_code}). Try again shortly.")
+        raise AnalyzerError(
+            f"Anthropic API error ({exc.status_code}). Try again shortly."
+        ) from exc
+
+    stats.record(message)
 
     if message.stop_reason == "refusal":
         raise AnalyzerError(
             "Claude declined to analyze this document. If it is a genuine financial "
-            "filing, try removing any unrelated content and resubmitting."
+            "filing, remove any unrelated content and resubmit."
         )
+    if message.stop_reason == "max_tokens":
+        raise AnalyzerError("The analysis ran past its length limit. Try a shorter excerpt.")
 
     text = "".join(block.text for block in message.content if block.type == "text").strip()
     if not text:
@@ -322,11 +412,9 @@ def _call_claude(system: str, user_content: str, schema: Dict[str, Any] | None =
         return text
 
     try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        # output_config.format guarantees valid JSON, so this only fires if the
-        # response was cut short by max_tokens.
-        raise AnalyzerError("The analysis came back incomplete. Try a shorter excerpt.")
+        return enforce_list_limits(json.loads(text))
+    except json.JSONDecodeError as exc:
+        raise AnalyzerError("The analysis came back malformed. Try again.") from exc
 
 
 # --------------------------------------------------------------------------
@@ -334,32 +422,40 @@ def _call_claude(system: str, user_content: str, schema: Dict[str, Any] | None =
 # --------------------------------------------------------------------------
 
 
+def normalize_text(text: str) -> str:
+    """Tidy whitespace left over from PDF extraction without altering content."""
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
 def estimate_tokens(text: str) -> int:
     return int(len(text) / CHARS_PER_TOKEN)
 
 
-def _split_into_chunks(text: str) -> List[str]:
-    """Split on paragraph boundaries, with a small overlap so context isn't cut mid-thought."""
-    paragraphs = text.split("\n\n")
-    chunks: List[str] = []
-    current: List[str] = []
+def split_into_chunks(text: str) -> list[str]:
+    """Split on paragraph boundaries, overlapping slightly so no thought is cut in half."""
+    chunks: list[str] = []
+    current: list[str] = []
     size = 0
 
-    for paragraph in paragraphs:
-        # A single paragraph larger than a whole chunk (common in scraped PDFs)
-        # gets hard-split rather than skipped.
+    for paragraph in text.split("\n\n"):
+        # One paragraph bigger than a whole chunk (common in scraped PDFs) is
+        # hard-split rather than dropped.
         if len(paragraph) > CHUNK_CHARS:
             if current:
                 chunks.append("\n\n".join(current))
                 current, size = [], 0
-            for i in range(0, len(paragraph), CHUNK_CHARS):
-                chunks.append(paragraph[i : i + CHUNK_CHARS])
+            chunks.extend(
+                paragraph[i : i + CHUNK_CHARS] for i in range(0, len(paragraph), CHUNK_CHARS)
+            )
             continue
 
-        if size + len(paragraph) > CHUNK_CHARS and current:
+        if current and size + len(paragraph) > CHUNK_CHARS:
             chunks.append("\n\n".join(current))
-            tail = current[-1][-CHUNK_OVERLAP:] if current else ""
-            current, size = ([tail] if tail else []), len(tail)
+            tail = current[-1][-CHUNK_OVERLAP:]
+            current, size = [tail], len(tail)
 
         current.append(paragraph)
         size += len(paragraph) + 2
@@ -370,28 +466,36 @@ def _split_into_chunks(text: str) -> List[str]:
     return [chunk for chunk in chunks if chunk.strip()]
 
 
-def _condense(text: str) -> str:
-    """Map/reduce a document too long to analyze in one pass into analyst notes."""
-    chunks = _split_into_chunks(text)
-    notes: List[str] = []
+def _condense(chunks: list[str], stats: RunStats, progress: Progress, prefix: str) -> str:
+    """Condense each section into analyst notes, in parallel, preserving order."""
+    total = len(chunks)
+    done = 0
+    done_lock = threading.Lock()
 
-    for index, chunk in enumerate(chunks, start=1):
+    def condense_one(indexed: tuple[int, str]) -> str:
+        nonlocal done
+        index, chunk = indexed
         note = _call_claude(
             CONDENSE_SYSTEM,
-            f"Section {index} of {len(chunks)} of the document:\n\n<section>\n{chunk}\n</section>",
+            f"Section {index} of {total} of the document:\n\n<section>\n{chunk}\n</section>",
+            stats,
         )
-        notes.append(f"--- NOTES FROM SECTION {index} OF {len(chunks)} ---\n{note}")
+        with done_lock:
+            done += 1
+            progress(f"{prefix}Condensed section {done} of {total}")
+        return f"--- NOTES FROM SECTION {index} OF {total} ---\n{note}"
+
+    with ThreadPoolExecutor(max_workers=min(MAX_PARALLEL_CALLS, total)) as pool:
+        notes = list(pool.map(condense_one, enumerate(chunks, start=1)))
 
     return "\n\n".join(notes)
 
 
-def prepare_document(text: str) -> tuple[str, Dict[str, Any]]:
-    """
-    Return (document_to_analyze, metadata).
-
-    Short documents pass straight through. Long ones are condensed first, and
-    the metadata records that so the UI can disclose it.
-    """
+def _analyze(
+    text: str, stats: RunStats, progress: Progress, prefix: str = ""
+) -> tuple[dict[str, Any], str]:
+    """Analyze one document. Returns the analysis and the text it was based on:
+    the document itself, or the condensed notes for a long one."""
     text = normalize_text(text)
     if len(text) < MIN_DOCUMENT_CHARS:
         raise AnalyzerError(
@@ -399,27 +503,25 @@ def prepare_document(text: str) -> tuple[str, Dict[str, Any]]:
             f"(at least {MIN_DOCUMENT_CHARS} characters)."
         )
 
-    meta: Dict[str, Any] = {
+    meta: dict[str, Any] = {
         "characters": len(text),
         "estimated_tokens": estimate_tokens(text),
         "chunked": False,
         "chunks": 1,
     }
+    progress(f"{prefix}Reading {len(text):,} characters")
 
-    if len(text) <= SINGLE_PASS_CHAR_LIMIT:
-        return text, meta
+    document = text
+    if len(text) > SINGLE_PASS_CHAR_LIMIT:
+        chunks = split_into_chunks(text)
+        meta.update(chunked=True, chunks=len(chunks))
+        progress(f"{prefix}Long document: condensing {len(chunks)} sections in parallel")
+        document = _condense(chunks, stats, progress, prefix)
 
-    chunk_count = len(_split_into_chunks(text))
-    meta.update(chunked=True, chunks=chunk_count)
-    return _condense(text), meta
-
-
-def normalize_text(text: str) -> str:
-    """Tidy whitespace from PDF extraction without altering content."""
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
-    text = re.sub(r"[ \t]+", " ", text)
-    text = re.sub(r"\n{3,}", "\n\n", text)
-    return text.strip()
+    progress(f"{prefix}Analyzing with {MODEL_LABEL}")
+    analysis = _call_claude(ANALYSIS_SYSTEM, f"<document>\n{document}\n</document>", stats, ANALYSIS_SCHEMA)
+    analysis["_meta"] = meta
+    return analysis, document
 
 
 # --------------------------------------------------------------------------
@@ -427,23 +529,27 @@ def normalize_text(text: str) -> str:
 # --------------------------------------------------------------------------
 
 
-def extract_text_from_pdf(file_stream) -> str:
-    """Pull text out of an uploaded PDF. Scanned/image-only PDFs yield nothing."""
-    from PyPDF2 import PdfReader
-    from PyPDF2.errors import PdfReadError
+def extract_text_from_pdf(file_stream: Any) -> str:
+    """Pull text out of an uploaded PDF. Scanned, image-only PDFs yield nothing."""
+    from pypdf import PdfReader
+    from pypdf.errors import PdfReadError
 
     try:
         reader = PdfReader(file_stream)
         pages = [page.extract_text() or "" for page in reader.pages]
-    except PdfReadError:
-        raise AnalyzerError("That PDF could not be read. It may be corrupt or password-protected.")
-    except Exception:
-        raise AnalyzerError("That PDF could not be read. Try exporting it again or paste the text.")
+    except PdfReadError as exc:
+        raise AnalyzerError(
+            "That PDF could not be read. It may be corrupt or password-protected."
+        ) from exc
+    except Exception as exc:
+        raise AnalyzerError(
+            "That PDF could not be read. Try exporting it again, or paste the text."
+        ) from exc
 
     text = normalize_text("\n\n".join(pages))
     if len(text) < MIN_DOCUMENT_CHARS:
         raise AnalyzerError(
-            "No readable text found in that PDF. It is probably a scanned image — "
+            "No readable text found in that PDF. It is probably a scanned image; "
             "paste the text directly instead."
         )
     return text
@@ -454,35 +560,54 @@ def extract_text_from_pdf(file_stream) -> str:
 # --------------------------------------------------------------------------
 
 
-def analyze_document(text: str) -> Dict[str, Any]:
+def analyze_document(text: str, progress: Progress = _no_progress) -> dict[str, Any]:
     """Analyze one financial document and return the structured summary."""
-    document, meta = prepare_document(text)
-    analysis = _call_claude(
-        ANALYSIS_SYSTEM,
-        f"<document>\n{document}\n</document>",
-        ANALYSIS_SCHEMA,
-    )
-    analysis["_meta"] = meta
+    stats = RunStats()
+    analysis, _ = _analyze(text, stats, progress)
+    analysis["_meta"]["usage"] = stats.as_dict()
     return analysis
 
 
-def compare_documents(text_a: str, text_b: str) -> Dict[str, Any]:
-    """
-    Analyze two documents from the same company and compare them.
+def _period_block(label: str, analysis: dict[str, Any], document: str) -> str:
+    public = {key: value for key, value in analysis.items() if not key.startswith("_")}
+    return (
+        f"<{label}>\n<analysis>\n{json.dumps(public, indent=2, ensure_ascii=False)}\n</analysis>\n"
+        f"<document>\n{document}\n</document>\n</{label}>"
+    )
 
-    text_a is treated as the earlier period, text_b as the later one.
-    """
-    earlier = analyze_document(text_a)
-    later = analyze_document(text_b)
 
-    payload = {
-        "earlier_period": {k: v for k, v in earlier.items() if not k.startswith("_")},
-        "later_period": {k: v for k, v in later.items() if not k.startswith("_")},
-    }
+def compare_documents(
+    text_a: str,
+    text_b: str,
+    progress: Progress = _no_progress,
+) -> dict[str, Any]:
+    """
+    Analyze two documents from the same company, then compare them.
+
+    text_a is the earlier period and text_b the later one. The two analyses are
+    independent, so they run concurrently.
+    """
+    stats = RunStats()
+    progress("Analyzing both periods in parallel")
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        earlier_job = pool.submit(_analyze, text_a, stats, progress, "Earlier period: ")
+        later_job = pool.submit(_analyze, text_b, stats, progress, "Later period: ")
+        (earlier, earlier_doc), (later, later_doc) = earlier_job.result(), later_job.result()
+
+    progress("Comparing the two periods")
     comparison = _call_claude(
         COMPARISON_SYSTEM,
-        json.dumps(payload, indent=2),
+        _period_block("earlier_period", earlier, earlier_doc)
+        + "\n\n"
+        + _period_block("later_period", later, later_doc),
+        stats,
         COMPARISON_SCHEMA,
     )
 
-    return {"earlier": earlier, "later": later, "comparison": comparison}
+    return {
+        "earlier": earlier,
+        "later": later,
+        "comparison": comparison,
+        "_meta": {"usage": stats.as_dict()},
+    }
