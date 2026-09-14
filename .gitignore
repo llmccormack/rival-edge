@@ -1,11 +1,21 @@
+# secrets
 .env
+
+# environments
 venv/
 .venv/
+
+# caches
 __pycache__/
 *.py[cod]
-.DS_Store
+.pytest_cache/
+.ruff_cache/
+
+# exported reports (committed examples live in docs/)
 *.pdf
 !docs/*.pdf
+
+# editors / OS
+.DS_Store
 .idea/
 .vscode/
-
