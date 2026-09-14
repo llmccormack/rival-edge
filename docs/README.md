@@ -1,12 +1,15 @@
-# Screenshots
+# docs
 
-Drop UI screenshots here and reference them from the top-level README.
+Screenshots and example exports referenced from the top-level README.
 
-Suggested captures, taken at a 1200px-wide window:
+| File | What it is |
+| --- | --- |
+| `screenshot-analysis.png` | Single-document analysis of the sample Q3 transcript |
+| `screenshot-comparison.png` | Q2 → Q3 comparison view |
+| `screenshot-progress.png` | Live progress while both periods are analyzed in parallel |
+| `screenshot-pdf.png` | First page of the exported PDF report |
+| `example-analysis.pdf`, `example-comparison.pdf` | Full PDF exports |
 
-- `screenshot-analysis.png` — a completed single-document analysis, scrolled so the
-  navy summary card and the first row of result cards are both visible.
-- `screenshot-compare.png` — the quarter comparison view showing the delta table.
-- `screenshot-pdf.png` — the exported PDF opened in a viewer.
-
-The top-level README has the first of these ready to uncomment.
+Everything here comes from real runs against the Claude API on the fictional
+sample transcripts in `samples/`. Regenerate the example data with
+`python scripts/generate_examples.py`.

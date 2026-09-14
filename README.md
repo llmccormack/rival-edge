@@ -1,116 +1,120 @@
 # Rival Edge
 
-**An AI financial document analyzer that turns earnings call transcripts and 10-K filings into structured equity research summaries.**
+[![CI](https://github.com/llmccormack/rival-edge/actions/workflows/ci.yml/badge.svg)](https://github.com/llmccormack/rival-edge/actions/workflows/ci.yml)
+![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-0b1b2b)
+![Claude Opus 5](https://img.shields.io/badge/Claude-Opus%205-0f8a81)
+![License: MIT](https://img.shields.io/badge/license-MIT-0b1b2b)
 
-Paste a transcript or upload a filing, and Rival Edge returns a labelled research note — revenue and earnings performance, year-over-year growth, management guidance, ranked risks and opportunities, verbatim executive quotes, and a sentiment call with reasoning. It also compares two reporting periods side by side and exports either view as a formatted PDF.
+**An AI financial document analyzer that turns earnings call transcripts and 10-K filings into structured equity research notes.**
 
-Built with Flask and the Claude API.
+Paste a transcript or upload a filing. Rival Edge extracts revenue and earnings, year-over-year growth, guidance, ranked risks and opportunities, verbatim executive quotes, and a sentiment call with reasoning. It can compare two quarters to show what actually changed, and it exports either view as a typeset PDF.
 
-<!-- Drop a screenshot at docs/screenshot-analysis.png and uncomment the line below.
-![Rival Edge — single document analysis](docs/screenshot-analysis.png)
--->
+![Single-document analysis of the sample Q3 earnings call](docs/screenshot-analysis.png)
 
----
-
-## Why it exists
-
-Reading a quarterly earnings call means working through 8,000–15,000 words to find the handful of facts that actually move a thesis: what revenue did, what guidance changed, what management is suddenly cautious about. A 10-K is an order of magnitude worse.
-
-Rival Edge does that first pass. It does not pick stocks and it does not replace reading the filing — it produces the structured extract an analyst would otherwise spend an hour assembling by hand, so the human time goes to judgment instead of retrieval.
+<sub>Real output from Claude Opus 5 on the bundled sample transcript. Northwind Logistics is a fictional company.</sub>
 
 ---
 
-## Features
+## Try it in a minute
 
-**Document input** — paste text directly, or upload a `.txt` or `.pdf` (drag and drop supported). PDFs are parsed server-side with PyPDF2.
+```bash
+git clone https://github.com/llmccormack/rival-edge.git
+cd rival-edge
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env          # add your ANTHROPIC_API_KEY
+python app.py
+```
 
-**Structured analysis** — every run returns the same eleven fields, each rendered as its own card:
+Open **http://127.0.0.1:5001**, click **Load sample transcript**, then **Analyze document**.
 
-| Field | What it contains |
-| --- | --- |
-| Company overview | 1–2 sentences on the business |
-| Revenue & earnings | Actual reported figures, with comparisons |
-| Year-over-year | Growth or decline, decomposed where the document allows |
-| Guidance & outlook | Forward guidance, raised/cut/maintained |
-| Top risks | Three, ranked by materiality |
-| Top opportunities | Three, ranked |
-| Key quotes | Three verbatim, attributed to the speaker |
-| Sentiment | Bullish / Neutral / Bearish, with reasoning |
-| Analyst summary | A 3–4 sentence note in analyst voice |
+No API key? The app still runs. It shows saved output from a real run, so you can explore every view and export a PDF without spending anything.
 
-**Quarter comparison** — submit two transcripts and get a delta table (metric, earlier, later, direction, commentary), guidance changes, shifts in management's tone, new versus resolved risks, and three things to watch next quarter.
+---
 
-**PDF export** — both views export as a typeset PDF with a navy masthead, alternating table rows, and directional colour coding. Built with fpdf2, no headless browser required.
+## What it does
 
-**Long-document handling** — filings past ~320,000 characters are split on paragraph boundaries, condensed section by section into analyst notes, then analyzed in a final pass. Content is never truncated.
+### Structured analysis
+
+Every run returns the same fields, each rendered as its own card: company overview, revenue and earnings with actual figures, year-over-year growth, guidance and outlook, three ranked risks, three ranked opportunities, three verbatim quotes with speakers, a Bullish / Neutral / Bearish call with reasoning, and a 3–4 sentence analyst summary.
+
+The model is told to use only figures that appear in the document and to write "Not disclosed" instead of guessing. On the sample transcripts, every quote in the saved output appears verbatim in the source.
+
+### Quarter-over-quarter comparison
+
+Give it two transcripts from the same company and it produces a delta table (metric, earlier, later, direction, commentary), the guidance change, how management's tone shifted, which risks are new and which faded, and what to watch next quarter.
+
+![Comparison of the sample Q2 and Q3 calls](docs/screenshot-comparison.png)
+
+### Live progress
+
+Analysis takes from 20 seconds to a few minutes. The UI shows each stage as it actually starts on the server, not a timer cycling canned messages. In compare mode, you can watch both periods being analyzed at once.
+
+![Both periods analyzed in parallel](docs/screenshot-progress.png)
+
+### PDF export
+
+Both views export as an A4 report with a delta table, directional colour coding, and page breaks that respect table rows. See [`docs/example-comparison.pdf`](docs/example-comparison.pdf).
+
+<img src="docs/screenshot-pdf.png" alt="First page of an exported comparison report" width="420">
 
 ---
 
 ## How it works
 
+```mermaid
+flowchart LR
+    UI["Browser<br/>static/app.js"] -- "document" --> API["Flask<br/>app.py"]
+    API -- "NDJSON progress + result" --> UI
+    API --> A["analyzer.py"]
+    A -- "short document" --> C1["Claude: analyze<br/>(JSON schema enforced)"]
+    A -- "long filing" --> M["Condense sections<br/>in parallel"] --> C1
+    A -- "compare mode" --> P["Analyze both periods<br/>in parallel"] --> C2["Claude: compare<br/>(summaries + source text)"]
+    API --> R["report.py<br/>fpdf2"] --> PDF["PDF"]
 ```
-Browser  ──▶  Flask (app.py)  ──▶  analyzer.py  ──▶  Claude API
-                    │                     │
-                    │                     ├─ short doc  ─▶ one structured call
-                    │                     └─ long doc   ─▶ condense each section, then analyze
-                    │
-                    └──▶  fpdf2  ──▶  PDF download
-```
 
-Three engineering decisions worth calling out:
+| Mode | Claude calls | Typical time | Tokens (in / out) | Approx. cost |
+| --- | --- | --- | --- | --- |
+| Single earnings call | 1 | ~25 s | 4.5k / 1.8k | $0.07 |
+| Two-quarter comparison | 3 | ~55 s | 21k / 6.2k | $0.26 |
 
-**Schema enforcement instead of JSON parsing.** The analysis and comparison shapes are declared as JSON Schema and passed to the API through `output_config.format`. The model cannot return prose, markdown fences, or a missing field — the response is valid JSON matching the schema or the request fails. That removes the entire class of "strip the code fence and hope `json.loads` works" bugs, and it lets the frontend render without defensive checks on every field.
-
-**Map/reduce rather than truncation.** Claude Opus 5 has a 1M-token context window, so most filings fit in one call. The chunking path exists for the ones that don't, and for keeping latency and cost reasonable on very long documents. Sections are condensed by a cheaper "research associate" prompt that preserves figures and quotes but strips boilerplate, then the analysis prompt runs over the notes. Nothing is silently dropped, and the UI discloses when a document was condensed.
-
-**Streaming for every request.** A 10-K analysis can legitimately run for minutes. Streaming with `get_final_message()` keeps the connection alive rather than risking an HTTP timeout, without complicating the calling code.
-
-The app also enables server-side refusal fallbacks, so a request declined by a safety classifier is transparently re-run on a fallback model inside the same call instead of returning nothing.
+<sub>Measured on the sample transcripts. Cost at Claude Opus 5 list pricing ($5 / $25 per million tokens) when measured.</sub>
 
 ---
 
-## Running it locally
+## Engineering decisions
 
-Requires Python 3.9 or newer and an [Anthropic API key](https://console.anthropic.com/settings/keys).
+These are the parts worth reading if you're reviewing the code.
+
+**The output shape is enforced by the API, not parsed out of prose.** Both schemas are sent through `output_config.format`, so the response is always valid JSON with every field present. No stripping markdown fences, no defensive `.get()` on every key in the frontend.
+
+That came with a constraint worth knowing about. Structured outputs reject `minItems`/`maxItems` values above 1, so "exactly three risks" can't live in the schema; the first version returned a 400 on every request. List lengths now live in the field descriptions, and `enforce_list_limits` trims the parsed result. That trim isn't theoretical: a live comparison once came back with seven deltas when the prompt asked for three to six. A test walks both schemas to keep unsupported constraints from coming back.
+
+**The comparison reads the source documents, not just the two summaries.** The first version compared the two structured analyses only. In live testing, it reported that a Q3 customer-concentration figure was "not disclosed". It *was* disclosed, in the Q&A section, which the summary hadn't included. The comparison call now receives each period's analysis *and* its source text, with an instruction that a figure disclosed only in Q&A still counts. That added about 7k input tokens per comparison. A regression test covers it.
+
+**Independent work runs concurrently.** In compare mode, the two period analyses have no dependency on each other, so they run on a thread pool: analyzing two quarters takes about as long as analyzing one. Long filings follow the same approach: sections are condensed in parallel, with results collected in document order. Token usage is aggregated across threads behind a lock.
+
+**Long filings are condensed, never truncated.** Claude Opus 5's 1M-token context fits most filings in one pass. Past roughly 320k characters, the document is split on paragraph boundaries (with overlap) and each section is condensed into dense analyst notes that preserve figures and quotes. The analysis prompt then runs over those notes, and the UI discloses that it happened.
+
+**Progress is streamed, and it's honest.** `/api/analyze` and `/api/compare` return newline-delimited JSON. The analyzer reports progress through a callback as each stage starts, and a worker thread feeds a queue that the Flask response generator drains. Errors arrive as events too; unexpected exceptions are logged server-side and never leaked to the client.
+
+**Long runs can't hit a timeout or a length cap.** Every request streams, so multi-minute calls don't hit HTTP timeouts. Opus 5 thinks by default, and thinking counts toward `max_tokens`, so the ceiling is set high (64k) to leave room for reasoning. The call is still billed only for tokens actually used.
+
+**Refusals degrade gracefully.** Requests opt into server-side refusal fallbacks, so if a safety classifier declines, the API re-runs the request on a fallback model within the same call. If the whole chain still refuses, the user gets a clear message instead of an empty card.
+
+---
+
+## Testing
 
 ```bash
-git clone https://github.com/<your-username>/rival-edge.git
-cd rival-edge
-
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-
-cp .env.example .env        # then add your ANTHROPIC_API_KEY
-
-python app.py
+pip install -r requirements-dev.txt
+pytest          # 57 tests, ~8 seconds, no network
+ruff check .
 ```
 
-Open http://127.0.0.1:5001.
+The suite never calls the real API. `conftest.py` clears the API key and points the SDK at a closed local port, so an accidental live call fails fast. The Claude integration is tested against a small local server that speaks the Messages streaming protocol, which lets the tests check what is actually sent over the wire. That covers model, streaming, schema, fallback headers, request concurrency, chunk ordering, and refusal, truncation, and auth failures.
 
-The default port is 5001 rather than Flask's usual 5000, which the macOS AirPlay Receiver occupies. Override it with `PORT=5002 python app.py` if 5001 is also taken.
-
-### Configuration
-
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `ANTHROPIC_API_KEY` | yes | Anthropic API credentials |
-| `RIVAL_EDGE_FALLBACKS` | no | Set to `0` to disable server-side refusal fallbacks |
-| `PORT` | no | Port to serve on (default `5001`) |
-
----
-
-## Tech
-
-| Layer | Choice | Why |
-| --- | --- | --- |
-| Backend | Flask 3 | Four routes and no persistence — a heavier framework would be overhead |
-| AI | Claude Opus 5 via the Anthropic Python SDK | Long-context reasoning over financial prose; schema-enforced structured output |
-| PDF input | PyPDF2 | Text extraction from uploaded filings |
-| PDF output | fpdf2 | Typeset reports without a headless browser dependency |
-| Frontend | Vanilla HTML/CSS/JS | No build step; the whole UI is one template and one stylesheet |
-| Config | python-dotenv | Keys stay out of the repo |
-
-No database. Documents are analyzed in memory and discarded when the request ends — nothing is written to disk.
+CI runs lint and tests on Python 3.10 through 3.13.
 
 ---
 
@@ -118,32 +122,38 @@ No database. Documents are analyzed in memory and discarded when the request end
 
 ```
 rival-edge/
-├── app.py             Flask routes and PDF report generation
-├── analyzer.py        Claude integration, schemas, prompts, chunking
-├── templates/
-│   └── index.html     Single-page UI
+├── app.py                     Flask routes and NDJSON progress streaming
+├── analyzer.py                Claude integration: prompts, schemas, chunking, concurrency
+├── report.py                  PDF report generation (fpdf2)
+├── templates/index.html       Page markup
 ├── static/
-│   └── style.css      Stylesheet
-├── requirements.txt
-├── .env.example
-└── README.md
+│   ├── app.js                 Client: stream reader, rendering, export
+│   └── style.css
+├── samples/                   Fictional sample transcripts + saved real output
+├── scripts/
+│   └── generate_examples.py   Regenerates samples/example-*.json from real runs
+├── tests/                     pytest suite with a local Messages API stub
+└── docs/                      Screenshots and example PDFs
 ```
 
----
+## Configuration
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | For live analysis | Without it, the app serves saved examples only |
+| `PORT` | No | Defaults to `5001`, since macOS reserves 5000 for AirPlay Receiver |
+| `RIVAL_EDGE_FALLBACKS` | No | Set to `0` to disable server-side refusal fallbacks |
+
+## Tech
+
+Python 3.10+ · Flask 3 · Anthropic Python SDK 1.x (Claude Opus 5) · pypdf · fpdf2 · vanilla JavaScript and CSS, with no build step and no database. Documents are processed in memory and never written to disk.
 
 ## Limitations
 
-- **Scanned PDFs are not supported.** Image-only PDFs contain no extractable text; the app detects this and asks for pasted text rather than returning an empty analysis. OCR would be the obvious next addition.
-- **Analysis quality depends on the document.** Given a partial transcript, the model reports what is there and marks the rest "Not disclosed" — it does not infer missing figures. That is deliberate; a plausible invented number is worse than an admitted gap.
-- **Comparison assumes the same company.** Two documents from different issuers will produce a comparison, but not a meaningful one.
-- **Not investment advice.** Output is an AI-generated research aid. Verify every figure against the source filing before acting on it.
-
----
+- **Scanned PDFs aren't supported.** Image-only PDFs have no text layer. The app detects this and asks for pasted text rather than analyzing an empty document.
+- **Comparison assumes the same company.** Two different issuers produce a comparison, just not a meaningful one.
+- **Output is a research aid, not advice.** Verify figures against the source filing before relying on them.
 
 ## License
 
-MIT
-
----
-
-Built by Luke McCormack · [Rival Automations](https://rivalautomations.com)
+[MIT](LICENSE) © Luke McCormack · Built at [Rival Automations](https://rivalautomations.com)
