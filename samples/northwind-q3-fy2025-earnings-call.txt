@@ -1,0 +1,120 @@
+[SAMPLE DOCUMENT: Northwind Logistics is a fictional company. This transcript, every figure in it, and every person quoted are invented for demonstrating Rival Edge.]
+
+Northwind Logistics, Inc.
+Third Quarter Fiscal 2025 Earnings Conference Call
+October 23, 2025, 8:30 a.m. Eastern
+
+CORPORATE PARTICIPANTS
+Rachel Ortiz, Vice President, Investor Relations
+Dana Whitfield, President and Chief Executive Officer
+Marcus Lee, Executive Vice President and Chief Financial Officer
+
+CONFERENCE CALL PARTICIPANTS
+Tom Brenner, Harbor Point Securities
+Priya Nair, Crestline Capital Markets
+James Okafor, Aldridge & Company
+Elena Voss, Summit Ridge Research
+
+PRESENTATION
+
+Operator
+Good morning, and welcome to the Northwind Logistics third quarter fiscal 2025 earnings conference call. All participants are in a listen-only mode. After the prepared remarks, we will open the line for questions. I would now like to turn the call over to Rachel Ortiz, Vice President of Investor Relations.
+
+Rachel Ortiz
+Thank you, and good morning. With me are Dana Whitfield, our President and CEO, and Marcus Lee, our CFO. Today's remarks include forward-looking statements subject to risks and uncertainties, and actual results may differ materially. Reconciliations of adjusted measures are in our earnings release. Dana?
+
+Dana Whitfield
+Thanks, Rachel. Good morning, everyone. The third quarter was difficult, and I want to start by being direct about it.
+
+Revenue was $1.39 billion, up 0.7% from $1.38 billion a year ago. Adjusted earnings per share were $1.71, down 4.5% from $1.79. Our operating ratio was 89.8%, 140 basis points worse than the third quarter of last year.
+
+The softness in industrial demand that we flagged in July did not stabilize. It deepened. Tonnage per day declined 4.3% year over year, and every month of the quarter was negative, with September the weakest at down 5.6%. Our pricing held. Revenue per hundredweight, excluding fuel surcharge, increased 5.1%. But at this level of volume decline, yield alone no longer offsets the lost tonnage, and the fixed cost of the network works against us.
+
+I also want to address our pricing posture directly, because it contributed to the volume decline. During the quarter, we walked away from approximately $40 million of annualized revenue that did not meet our margin thresholds, as several competitors discounted aggressively for freight. I believe that was the right decision for the long-term health of the network. I also recognize it made this quarter's volume numbers worse.
+
+There were bright spots. Last-mile revenue was $204 million, up 19% year over year, and the segment posted a positive operating margin of 0.4%. That's the first profitable quarter in the segment's history, and it's a milestone the team has worked toward for three years.
+
+On the network: we opened our Laredo terminal in September, and early cross-border volumes are in line with plan. However, given the demand environment, we have decided to delay the San Antonio terminal opening to fiscal 2026. We would rather not add fixed cost into a declining volume environment.
+
+We are not calling a bottom. We are planning for demand to remain soft through at least the end of the calendar year, and we are adjusting the cost structure accordingly. Headcount is down 3% since June, entirely through attrition, and we have reduced linehaul schedules on our lowest-density lanes.
+
+Marcus will take you through the numbers and our revised outlook.
+
+Marcus Lee
+Thank you, Dana. Good morning.
+
+Revenue of $1.39 billion was up 0.7%. Excluding fuel surcharge, revenue grew 1.4%.
+
+Operating ratio of 89.8% deteriorated 140 basis points year over year. The drivers were volume deleverage on a largely fixed terminal network, continued driver wage inflation of about 6% per hour, and an increase in insurance and claims expense, which rose 12% year over year on higher accident severity costs across the industry. Purchased transportation improved as last-mile accounts shifted onto our own capacity.
+
+Adjusted EPS was $1.71. GAAP EPS was $1.63, which includes $9 million of costs related to the San Antonio construction deferral.
+
+Free cash flow was $88 million in the quarter. We are reducing full-year capital expenditures to $360 million from $410 million, reflecting the San Antonio deferral and a smaller tractor purchase. We moderated share repurchases to $20 million in the quarter to preserve flexibility. Net leverage ended at 1.4 times adjusted EBITDA.
+
+Now to the outlook. We are lowering full-year revenue guidance to $5.55 billion to $5.65 billion, from $5.75 billion to $5.85 billion. We are lowering adjusted EPS guidance to $6.60 to $6.85, from $7.10 to $7.40. The revised range assumes fourth-quarter tonnage declines in the range of 4% to 6%, with yield improvement of approximately 4.5% as renewal increases moderate somewhat from the high-single-digit levels we saw earlier this year.
+
+In July, we discussed a path to an operating ratio in the mid-87s for fiscal 2026. Given the current environment and the uncertainty around the timing of any industrial recovery, we do not believe it's appropriate to reaffirm that target today. We will provide fiscal 2026 guidance in January.
+
+With that, operator, let's take questions.
+
+QUESTION AND ANSWER
+
+Operator
+Our first question comes from Tom Brenner with Harbor Point Securities.
+
+Tom Brenner
+Good morning. Ninety days ago the message was that the raise was a yield story you had visibility into. What changed so quickly?
+
+Dana Whitfield
+Tom, the yield did hold, and it held within our range. What changed was volume. Our July guidance assumed tonnage flat to down 2%, and we delivered down 4.3%. The industrial destocking was deeper and broader than customers told us it would be, and we compounded it by declining unprofitable freight. I own that the guidance was too optimistic on volume.
+
+Tom Brenner
+Are you seeing any signs of stabilization in October?
+
+Dana Whitfield
+Not yet. October to date is running about in line with September. I'd rather not characterize it as stabilizing until we see a sustained change.
+
+Operator
+Our next question comes from Priya Nair with Crestline Capital Markets.
+
+Priya Nair
+Thanks. Marcus, last quarter we discussed wage inflation running ahead of yield. Now yield guidance is coming down to around 4.5% while wages are still at 6%. How much of the operating ratio pressure is structural versus cyclical?
+
+Marcus Lee
+Priya, most of the deterioration this quarter is cyclical: it's volume deleverage, and it reverses when tonnage returns. But you're right that the gap between wage inflation and yield is a structural headwind that doesn't depend on the cycle. If yield settles in the mid-4s and wages stay near 6%, we need productivity and density gains to close that gap, and density is exactly what a volume decline takes away. That's the honest picture, and it's a large part of why we're not reaffirming the fiscal 2026 target.
+
+Operator
+Our next question comes from James Okafor with Aldridge & Company.
+
+James Okafor
+Congratulations on last-mile breakeven. Is that sustainable, or did it benefit from anything one-time this quarter?
+
+Dana Whitfield
+Thank you, James. There was nothing one-time in it. The improvement came from moving volume off purchased transportation and onto our own capacity, which is durable. Growth is moderating from 24% last quarter to 19% this quarter as we lap the new account onboarding, but we expect the segment to remain profitable.
+
+James Okafor
+And customer concentration, where did the top ten land this quarter?
+
+Marcus Lee
+It was 31%, flat with the second quarter.
+
+Operator
+Our final question comes from Elena Voss with Summit Ridge Research.
+
+Elena Voss
+Thank you. Dana, last quarter you said you were comfortable trading tonnage for yield. After walking away from $40 million of revenue, are you still comfortable with that trade, or does the calculus change when the network is this underutilized?
+
+Dana Whitfield
+It's the right question, Elena, and we've debated it internally. Our view is that freight priced below our cost of capital doesn't become profitable because the network has spare capacity; it just makes the network busier while destroying value. So the principle holds. That said, we're reviewing our thresholds lane by lane, and in a handful of low-density lanes where the marginal freight covers variable cost and helps density, we may be more flexible. It will not be a broad change in posture.
+
+Elena Voss
+Thank you.
+
+Operator
+That concludes our question-and-answer session. I'll turn the call back to Dana Whitfield for closing remarks.
+
+Dana Whitfield
+Thank you. This was a quarter where the environment moved against us faster than we expected, and our guidance reflected an optimism on volume that did not materialize. We have cut guidance, reduced capital spending, deferred San Antonio, and we are managing cost carefully. At the same time, pricing is holding, last-mile has turned profitable, and Laredo is open. We are not calling a bottom, but we are positioning the company to benefit when industrial demand returns. We will provide our fiscal 2026 outlook in January.
+
+Operator
+This concludes today's conference call. You may now disconnect.

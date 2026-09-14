@@ -1,0 +1,124 @@
+[SAMPLE DOCUMENT: Northwind Logistics is a fictional company. This transcript, every figure in it, and every person quoted are invented for demonstrating Rival Edge.]
+
+Northwind Logistics, Inc.
+Second Quarter Fiscal 2025 Earnings Conference Call
+July 24, 2025, 8:30 a.m. Eastern
+
+CORPORATE PARTICIPANTS
+Rachel Ortiz, Vice President, Investor Relations
+Dana Whitfield, President and Chief Executive Officer
+Marcus Lee, Executive Vice President and Chief Financial Officer
+
+CONFERENCE CALL PARTICIPANTS
+Tom Brenner, Harbor Point Securities
+Priya Nair, Crestline Capital Markets
+James Okafor, Aldridge & Company
+Elena Voss, Summit Ridge Research
+
+PRESENTATION
+
+Operator
+Good morning, and welcome to the Northwind Logistics second quarter fiscal 2025 earnings conference call. All participants are in a listen-only mode. After the prepared remarks, we will open the line for questions. I would now like to turn the call over to Rachel Ortiz, Vice President of Investor Relations.
+
+Rachel Ortiz
+Thank you, and good morning, everyone. Joining me today are Dana Whitfield, our President and CEO, and Marcus Lee, our CFO. Before we begin, please note that today's remarks include forward-looking statements that are subject to risks and uncertainties, and actual results may differ materially. We will also reference adjusted measures; reconciliations to the most comparable GAAP measures are in the earnings release posted on our investor relations website. With that, I'll turn it over to Dana.
+
+Dana Whitfield
+Thanks, Rachel, and good morning. I'm pleased to report a strong second quarter. Revenue was $1.42 billion, up 8.4% from $1.31 billion a year ago. Adjusted earnings per share were $1.86, up 11.4% from $1.67. And our operating ratio improved 80 basis points to 88.4%, which is the best second quarter in the company's history.
+
+I want to be precise about where that growth came from, because it matters for how we think about the back half. Tonnage per day increased 3.1%, but the bigger driver was price. Revenue per hundredweight, excluding fuel surcharge, rose 5.2%. We have been deliberate about this. Our network is running at high density on the lanes that matter, and we are pricing with discipline. Put simply, we would rather concede volume than concede yield in this environment.
+
+Our last-mile segment continues to be the fastest-growing part of the business. Last-mile revenue was $186 million, up 24% year over year, driven by three new e-commerce retail accounts that onboarded during the quarter. The segment operating margin was negative 1.8%, a significant improvement from negative 6.1% in the second quarter of last year. We have said for some time that this business reaches profitability at scale, and we are now close to that point.
+
+On the network, construction on our two new Texas terminals, in Laredo and San Antonio, remains on schedule for opening in the fourth quarter. Together they give us direct service into cross-border and Central Texas lanes that we estimate represent a $600 million addressable market we do not serve efficiently today.
+
+Now, I want to be candid about demand. The industrial side of our book is clearly softer than it was ninety days ago. We saw that most visibly in June, when tonnage per day was down 2% year over year, the first negative month since early 2024. Manufacturing customers in the Midwest are telling us they are managing inventories tightly heading into the second half. Industrial demand is clearly softer than it was ninety days ago, and we are planning the second half accordingly. That does not change our strategy, but it does inform how we are staffing the network.
+
+With that, I'll hand it to Marcus for the financial detail.
+
+Marcus Lee
+Thank you, Dana, and good morning. I'll walk through the quarter and then our updated outlook.
+
+Revenue of $1.42 billion grew 8.4%. Fuel surcharge revenue was roughly flat year over year as lower diesel prices offset higher volume. Excluding fuel, revenue grew 9.6%.
+
+Operating ratio of 88.4% improved 80 basis points. Operating ratio of 88.4% is the best second quarter in the company's history, and we see a path to the mid-87s next year. The improvement came primarily from yield, partially offset by cost pressure in two areas. First, driver wages and benefits increased 6% per hour, reflecting the new wage scale we implemented in January. Second, purchased transportation rose as we used third-party capacity to handle last-mile peaks. I would note that wage inflation of 6% is running ahead of our 5.2% yield improvement, which means incremental margins on pure price are narrowing. We are watching that closely.
+
+Adjusted EPS was $1.86, up 11.4%. GAAP EPS was $1.79.
+
+Turning to cash and capital allocation. Free cash flow for the quarter was $142 million. Capital expenditures were $98 million, and we are maintaining our full-year capital expenditure budget of $410 million, which includes the two Texas terminals and approximately 1,100 new tractors. We repurchased $75 million of stock during the quarter and ended with net leverage of 1.2 times adjusted EBITDA.
+
+One item worth highlighting on customer mix. Our top ten customers represented 31% of revenue in the quarter, up from 27% a year ago, largely because of the new last-mile accounts. These are high-quality customers on multi-year agreements, but we recognize that concentration has increased.
+
+Now to guidance. We are raising our full-year revenue guidance to a range of $5.75 billion to $5.85 billion, from our prior range of $5.65 billion to $5.80 billion. We are raising adjusted EPS guidance to $7.10 to $7.40, from $6.95 to $7.30. That outlook assumes tonnage for the remainder of the year is roughly flat to down 2%, consistent with what we saw in June, with continued yield improvement in the mid-single digits. Contract renewals in the back half are repricing at high-single-digit increases, which gives us confidence in the yield assumption.
+
+Given the softer industrial trends Dana described, we expect the third quarter to be more measured, and we expect earnings to be weighted toward the fourth quarter as the Texas terminals open and renewals take effect.
+
+With that, operator, please open the line for questions.
+
+QUESTION AND ANSWER
+
+Operator
+Our first question comes from Tom Brenner with Harbor Point Securities.
+
+Tom Brenner
+Good morning, and congratulations on the quarter. Dana, you raised guidance while also telling us June tonnage turned negative. How do you reconcile those two things? What gives you confidence in the raise?
+
+Dana Whitfield
+It's a fair question, Tom. The raise is fundamentally a yield story, not a volume story. We have visibility into contract renewals for the back half, and those are repricing at high-single-digit increases. Our guidance already assumes volumes are flat to down 2%. If tonnage were to fall materially further than that, we would have a conversation, but based on what customers are telling us today, we think the range is achievable.
+
+Tom Brenner
+And to be clear, is there any volume upside built in from the Texas terminals?
+
+Marcus Lee
+Very little for this year, Tom. They open late in the fourth quarter, so the contribution is minimal in fiscal 2025. That is really a fiscal 2026 story.
+
+Operator
+Our next question comes from Priya Nair with Crestline Capital Markets.
+
+Priya Nair
+Thanks. Marcus, I want to follow up on the wage comment. If wages are growing 6% and yield is growing 5.2%, doesn't that math eventually work against you, especially if volume softens?
+
+Marcus Lee
+You're pointing at exactly the right tension, Priya. On a per-unit basis, yes, wage inflation ahead of yield compresses incremental margins. What has offset it so far is density and productivity. Our pickup and delivery stops per hour improved 3% in the quarter. If volumes soften, density becomes harder to hold, so we are managing staffing carefully. We are not adding headcount in the industrial-heavy terminals, and we are letting attrition work.
+
+Priya Nair
+And is the mid-87s operating ratio target for next year contingent on volume recovering?
+
+Marcus Lee
+It assumes a stable environment. It does not require a strong recovery, but it does require that the current softness doesn't deepen significantly.
+
+Operator
+Our next question comes from James Okafor with Aldridge & Company.
+
+James Okafor
+Good morning. On last-mile, you're at negative 1.8% margin. When do you expect breakeven, and what's the risk that these new e-commerce accounts come with thinner economics than the core?
+
+Dana Whitfield
+Thanks, James. We expect the segment to cross breakeven within the next two to three quarters. The new accounts were priced to segment return thresholds, not as loss leaders. The margin drag this quarter was mostly onboarding cost and the purchased transportation Marcus mentioned. As those accounts mature onto our own capacity, margins improve.
+
+James Okafor
+And the concentration increase to 31%, should we expect that to keep rising?
+
+Marcus Lee
+In the near term it may tick up modestly as last-mile grows. Over time, as the Texas terminals bring in new industrial and cross-border accounts, we expect it to normalize.
+
+Operator
+Our final question comes from Elena Voss with Summit Ridge Research.
+
+Elena Voss
+Thank you. Dana, you've used the word disciplined a few times. Are you seeing competitors cut price to chase volume, and would you follow if they did?
+
+Dana Whitfield
+We are seeing some isolated discounting, mostly from smaller regional carriers in the Midwest. We are not following. We've built this network to earn a return, and we'll continue to walk away from freight that doesn't meet our thresholds. That may cost us some tonnage in the short run, and we're comfortable with that trade.
+
+Elena Voss
+Thank you.
+
+Operator
+That concludes our question-and-answer session. I'll turn the call back to Dana Whitfield for closing remarks.
+
+Dana Whitfield
+Thank you all for joining. To summarize: a record second-quarter operating ratio, raised guidance built on pricing we have visibility into, a last-mile business approaching profitability, and two terminals on track to expand our footprint. We are clear-eyed about industrial demand, and we'll manage the network accordingly. We look forward to updating you in October.
+
+Operator
+This concludes today's conference call. You may now disconnect.
