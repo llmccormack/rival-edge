@@ -51,6 +51,8 @@ EXAMPLE_OUTPUTS = {
 
 ALLOWED_EXTENSIONS = {".txt", ".pdf"}
 
+REPO_URL = "https://github.com/llmccormack/rival-edge"
+
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024  # 25 MB upload ceiling
 
@@ -129,6 +131,8 @@ def stream_job(job: Callable[[Progress], dict[str, Any]]) -> Response:
 def index():
     return render_template(
         "index.html",
+        demo=False,
+        repo_url=REPO_URL,
         has_api_key=bool(os.getenv("ANTHROPIC_API_KEY")),
         examples_available=examples_available(),
         model_label=MODEL_LABEL,
@@ -216,7 +220,8 @@ if __name__ == "__main__":
     print(f"\n  Rival Edge running at http://127.0.0.1:{port}\n")
 
     try:
-        app.run(host="127.0.0.1", port=port, debug=True, threaded=True)
+        # Debug mode (auto-reload, interactive tracebacks) is opt-in via FLASK_DEBUG=1.
+        app.run(host="127.0.0.1", port=port, debug=os.getenv("FLASK_DEBUG") == "1", threaded=True)
     except OSError as exc:
         print(f"\n  Could not bind to port {port}: {exc}")
         print("  Something else is using it. Try:  PORT=5002 python app.py\n")

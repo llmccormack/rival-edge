@@ -7,6 +7,8 @@
 
 **An AI financial document analyzer that turns earnings call transcripts and 10-K filings into structured equity research notes.**
 
+**[Try the live demo →](https://llmccormack.github.io/rival-edge/)** <sub>A static build showing saved output from real Claude runs, so no setup and no API key.</sub>
+
 Paste a transcript or upload a filing. Rival Edge extracts revenue and earnings, year-over-year growth, guidance, ranked risks and opportunities, verbatim executive quotes, and a sentiment call with reasoning. It can compare two quarters to show what actually changed, and it exports either view as a typeset PDF.
 
 ![Single-document analysis of the sample Q3 earnings call](docs/screenshot-analysis.png)
@@ -108,13 +110,13 @@ That came with a constraint worth knowing about. Structured outputs reject `minI
 
 ```bash
 pip install -r requirements-dev.txt
-pytest          # 57 tests, ~8 seconds, no network
+pytest          # 59 tests, ~8 seconds, no network
 ruff check .
 ```
 
 The suite never calls the real API. `conftest.py` clears the API key and points the SDK at a closed local port, so an accidental live call fails fast. The Claude integration is tested against a small local server that speaks the Messages streaming protocol, which lets the tests check what is actually sent over the wire. That covers model, streaming, schema, fallback headers, request concurrency, chunk ordering, and refusal, truncation, and auth failures.
 
-CI runs lint and tests on Python 3.10 through 3.13.
+CI runs lint and tests on Python 3.10 through 3.13. A second workflow builds the static demo with `scripts/build_static_demo.py`, rendering the real template in demo mode, and deploys it to GitHub Pages on every push to `main`.
 
 ---
 
@@ -131,7 +133,8 @@ rival-edge/
 │   └── style.css
 ├── samples/                   Fictional sample transcripts + saved real output
 ├── scripts/
-│   └── generate_examples.py   Regenerates samples/example-*.json from real runs
+│   ├── generate_examples.py   Regenerates samples/example-*.json from real runs
+│   └── build_static_demo.py   Builds the GitHub Pages demo
 ├── tests/                     pytest suite with a local Messages API stub
 └── docs/                      Screenshots and example PDFs
 ```
@@ -143,6 +146,7 @@ rival-edge/
 | `ANTHROPIC_API_KEY` | For live analysis | Without it, the app serves saved examples only |
 | `PORT` | No | Defaults to `5001`, since macOS reserves 5000 for AirPlay Receiver |
 | `RIVAL_EDGE_FALLBACKS` | No | Set to `0` to disable server-side refusal fallbacks |
+| `FLASK_DEBUG` | No | Set to `1` for auto-reload and interactive tracebacks during development |
 
 ## Tech
 

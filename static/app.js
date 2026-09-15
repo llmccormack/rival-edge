@@ -24,6 +24,16 @@
 
   const MODEL_LABELS = { "claude-opus-5": document.body.dataset.modelLabel || "Claude Opus 5" };
 
+  // The static GitHub Pages build has no server: samples and saved examples
+  // are plain files, and live analysis is unavailable.
+  const DEMO = document.body.dataset.demo === "true";
+  const SAMPLE_FILES = {
+    q2: "northwind-q2-fy2025-earnings-call.txt",
+    q3: "northwind-q3-fy2025-earnings-call.txt"
+  };
+  const sampleUrl = (name) => DEMO ? `samples/${SAMPLE_FILES[name]}` : `/api/samples/${name}`;
+  const exampleUrl = (kind) => DEMO ? `samples/example-${kind}.json` : `/api/examples/${kind}`;
+
   const ICONS = {
     building: '<path d="M3 21h18"/><path d="M5 21V5a2 2 0 012-2h6a2 2 0 012 2v16"/><path d="M15 21V9h4a2 2 0 012 2v10"/><path d="M9 7h2M9 11h2M9 15h2"/>',
     revenue: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
@@ -150,7 +160,7 @@
   // ------------------------------------------------------------- samples
 
   const fetchSample = async (name) => {
-    const response = await fetch(`/api/samples/${name}`);
+    const response = await fetch(sampleUrl(name));
     if (!response.ok) throw new Error("Sample not found");
     return response.text();
   };
@@ -387,6 +397,11 @@
 
   async function run() {
     hideAlert();
+    if (DEMO) {
+      showAlert("This static demo can't run live analysis. Use “View example” to see saved output, " +
+        "or clone the repository and add an API key to analyze your own documents.");
+      return;
+    }
     const body = new FormData();
 
     if (mode === "single") {
@@ -451,7 +466,7 @@
     hideAlert();
     const kind = mode === "single" ? "analysis" : "comparison";
     try {
-      const response = await fetch(`/api/examples/${kind}`);
+      const response = await fetch(exampleUrl(kind));
       if (!response.ok) throw new Error("missing");
       showResult(mode, await response.json(), { example: true });
     } catch (error) {
@@ -463,6 +478,16 @@
 
   $("#export").addEventListener("click", async () => {
     if (!lastResult) return;
+
+    if (DEMO) {
+      const link = document.createElement("a");
+      link.href = `docs/example-${lastResult.mode === "single" ? "analysis" : "comparison"}.pdf`;
+      link.download = "";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      return;
+    }
     const button = $("#export");
     button.disabled = true;
 

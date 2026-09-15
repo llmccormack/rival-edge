@@ -25,6 +25,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(ROOT / "scripts"))
 
 # Set before app.py runs load_dotenv(), which never overrides existing
 # variables, so a developer's real .env key can't leak into the suite.
