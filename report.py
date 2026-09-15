@@ -13,16 +13,16 @@ from typing import Any
 from fpdf import FPDF
 from fpdf.enums import XPos, YPos
 
-# Brand palette, mirrored in static/style.css
+# Brand palette, mirrored in static/style.css. Text colors meet WCAG AA (4.5:1) on white.
 NAVY = (11, 27, 43)
 SLATE = (46, 63, 82)
 INK = (26, 32, 44)
-MUTED = (110, 124, 140)
+MUTED = (95, 110, 125)
 RULE = (214, 221, 229)
-ACCENT = (16, 138, 129)
-BULLISH = (16, 138, 129)
+ACCENT = (13, 121, 113)
+BULLISH = (14, 131, 122)
 BEARISH = (183, 60, 60)
-NEUTRAL = (176, 137, 46)
+NEUTRAL = (144, 112, 37)
 
 BADGE_COLORS = {
     "Bullish": BULLISH,

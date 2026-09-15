@@ -15,14 +15,15 @@
 
   --ink: #16202b;
   --ink-soft: #3d4d5e;
-  --muted: #6b7c8d;
+  --muted: #5f6e7d;
   --rule: #dde4ec;
 
   --accent: #0f8a81;
+  --accent-ink: #0d7971; /* teal for text: passes WCAG AA on light surfaces */
   --accent-soft: #e6f4f2;
-  --bull: #0f8a81;
+  --bull: #0e837a;
   --bear: #b73c3c;
-  --neutral: #b0892e;
+  --neutral: #907025;
 
   --radius: 14px;
   --radius-sm: 9px;
@@ -231,7 +232,7 @@ main { padding-bottom: 64px; }
   font: inherit;
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-ink);
   cursor: pointer;
   text-decoration: underline;
   text-decoration-color: rgba(15, 138, 129, 0.35);
@@ -339,7 +340,7 @@ textarea:focus, .dropzone:focus-visible, .tab:focus-visible, button:focus-visibl
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-ink);
   background: var(--accent-soft);
   border-radius: 100px;
   padding: 3px 9px;
@@ -383,7 +384,7 @@ textarea:focus, .dropzone:focus-visible, .tab:focus-visible, button:focus-visibl
   color: var(--ink);
 }
 
-.btn--ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn--ghost:hover { border-color: var(--accent); color: var(--accent-ink); }
 
 .btn[disabled] { opacity: 0.55; cursor: not-allowed; transform: none; }
 
@@ -457,7 +458,7 @@ textarea:focus, .dropzone:focus-visible, .tab:focus-visible, button:focus-visibl
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-ink);
   background: var(--accent-soft);
   border-radius: 100px;
   padding: 2px 7px;
@@ -527,11 +528,23 @@ textarea:focus, .dropzone:focus-visible, .tab:focus-visible, button:focus-visibl
 
 .results__provenance:empty { display: none; }
 
-.usage { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; }
+/* Every item carries a leading separator, and the list is shifted left inside
+   a clipping wrapper, so the separator that starts each wrapped line is hidden
+   wherever the line happens to break. */
+.usage { overflow: hidden; min-width: 0; }
 
-.usage > span + span::before {
+.usage__items {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 4px;
+  margin-left: -20px;
+}
+
+.usage__items > span::before {
   content: "·";
-  margin-right: 12px;
+  display: inline-block;
+  width: 20px;
+  text-align: center;
   color: #b7c2cd;
 }
 
@@ -661,7 +674,7 @@ textarea:focus, .dropzone:focus-visible, .tab:focus-visible, button:focus-visibl
   width: 21px; height: 21px;
   border-radius: 6px;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-ink);
   font-size: 11.5px; font-weight: 700;
   display: grid; place-items: center;
   margin-top: 2px;
@@ -718,7 +731,7 @@ textarea:focus, .dropzone:focus-visible, .tab:focus-visible, button:focus-visibl
   white-space: nowrap;
 }
 
-.trend--up { color: var(--bull); }
+.trend--up { color: var(--accent-ink); }
 .trend--down { color: var(--bear); }
 .trend--flat, .trend--unclear { color: var(--muted); }
 

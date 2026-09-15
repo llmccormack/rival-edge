@@ -249,7 +249,7 @@
       `${compactNumber(usage.output_tokens)} out`,
       `${usage.elapsed_seconds}s`
     ].filter(Boolean).map((part) => `<span>${escapeHtml(part)}</span>`).join("");
-    return `<span class="usage">${parts}</span>`;
+    return `<span class="usage"><span class="usage__items">${parts}</span></span>`;
   };
 
   function renderAnalysis(data) {

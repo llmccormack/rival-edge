@@ -62,3 +62,19 @@ def test_paragraphs_are_left_aligned_not_justified():
 
     source = inspect.getsource(report)
     assert source.count("multi_cell(") == source.count('align="L"')
+
+
+def _contrast(fg: tuple[int, int, int], bg: tuple[int, int, int]) -> float:
+    def luminance(rgb):
+        channels = [c / 255 for c in rgb]
+        linear = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+        return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+    high, low = sorted((luminance(fg), luminance(bg)), reverse=True)
+    return (high + 0.05) / (low + 0.05)
+
+
+def test_report_text_colors_meet_wcag_aa():
+    white = (255, 255, 255)
+    for name in ("INK", "SLATE", "MUTED", "ACCENT", "BULLISH", "BEARISH", "NEUTRAL"):
+        assert _contrast(getattr(report, name), white) >= 4.5, name
