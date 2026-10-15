@@ -8,7 +8,9 @@ import pytest
 from fpdf import FPDF
 
 import analyzer
+import documents
 from analyzer import AnalyzerError
+from documents import DocumentError
 
 
 def _walk(schema, path="$"):
@@ -96,15 +98,15 @@ class TestPdfExtraction:
         return io.BytesIO(bytes(document.output()))
 
     def test_extracts_text_and_figures(self):
-        text = analyzer.extract_text_from_pdf(
+        text = documents.extract_text_from_pdf(
             self._pdf("Third quarter revenue of $1.39 billion, down from plan. " * 10)
         )
         assert "$1.39 billion" in text
 
     def test_image_only_pdf_is_explained(self):
-        with pytest.raises(AnalyzerError, match="scanned image"):
-            analyzer.extract_text_from_pdf(self._pdf(""))
+        with pytest.raises(DocumentError, match="scanned image"):
+            documents.extract_text_from_pdf(self._pdf(""))
 
     def test_corrupt_pdf_is_explained(self):
-        with pytest.raises(AnalyzerError, match="could not be read"):
-            analyzer.extract_text_from_pdf(io.BytesIO(b"%PDF-1.4 not really a pdf"))
+        with pytest.raises(DocumentError, match="could not be read"):
+            documents.extract_text_from_pdf(io.BytesIO(b"%PDF-1.4 not really a pdf"))

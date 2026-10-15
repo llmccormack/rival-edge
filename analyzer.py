@@ -8,15 +8,15 @@ structured equity-research summary.
 Public surface:
     analyze_document(text, progress)            -> dict
     compare_documents(text_a, text_b, progress) -> dict
-    extract_text_from_pdf(stream)               -> str
     AnalyzerError                                  user-presentable failure
+
+Document ingestion lives in documents.py; filing retrieval in edgar.py.
 """
 
 from __future__ import annotations
 
 import json
 import os
-import re
 import threading
 import time
 from collections.abc import Callable
@@ -25,6 +25,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import anthropic
+
+from documents import normalize_text
 
 # --------------------------------------------------------------------------
 # Configuration
@@ -422,14 +424,6 @@ def _call_claude(
 # --------------------------------------------------------------------------
 
 
-def normalize_text(text: str) -> str:
-    """Tidy whitespace left over from PDF extraction without altering content."""
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
-    text = re.sub(r"[ \t]+", " ", text)
-    text = re.sub(r"\n{3,}", "\n\n", text)
-    return text.strip()
-
-
 def estimate_tokens(text: str) -> int:
     return int(len(text) / CHARS_PER_TOKEN)
 
@@ -522,37 +516,6 @@ def _analyze(
     analysis = _call_claude(ANALYSIS_SYSTEM, f"<document>\n{document}\n</document>", stats, ANALYSIS_SCHEMA)
     analysis["_meta"] = meta
     return analysis, document
-
-
-# --------------------------------------------------------------------------
-# PDF input
-# --------------------------------------------------------------------------
-
-
-def extract_text_from_pdf(file_stream: Any) -> str:
-    """Pull text out of an uploaded PDF. Scanned, image-only PDFs yield nothing."""
-    from pypdf import PdfReader
-    from pypdf.errors import PdfReadError
-
-    try:
-        reader = PdfReader(file_stream)
-        pages = [page.extract_text() or "" for page in reader.pages]
-    except PdfReadError as exc:
-        raise AnalyzerError(
-            "That PDF could not be read. It may be corrupt or password-protected."
-        ) from exc
-    except Exception as exc:
-        raise AnalyzerError(
-            "That PDF could not be read. Try exporting it again, or paste the text."
-        ) from exc
-
-    text = normalize_text("\n\n".join(pages))
-    if len(text) < MIN_DOCUMENT_CHARS:
-        raise AnalyzerError(
-            "No readable text found in that PDF. It is probably a scanned image; "
-            "paste the text directly instead."
-        )
-    return text
 
 
 # --------------------------------------------------------------------------

@@ -45,6 +45,19 @@ class TestAnalyze:
         assert response.status_code == 400
         assert ".xlsx" in response.get_json()["error"]
 
+    def test_html_upload_is_converted_to_text(self, client, monkeypatch):
+        received = {}
+
+        def fake_analyze(text, progress):
+            received["text"] = text
+            return fixtures.analysis()
+
+        monkeypatch.setattr(app_module, "analyze_document", fake_analyze)
+        html = b"<html><body><p>Revenue was $1.39 billion.</p>" + b"<p>Filler sentence.</p>" * 20 + b"</body></html>"
+        client.post("/api/analyze", data={"file": (io.BytesIO(html), "msft-10k.htm")})
+        assert "Revenue was $1.39 billion." in received["text"]
+        assert "<p>" not in received["text"]
+
     def test_streams_progress_then_result(self, client, monkeypatch):
         def fake_analyze(text, progress):
             progress("Reading")
@@ -69,7 +82,7 @@ class TestAnalyze:
             "text": "pasted text",
             "file": (io.BytesIO(TRANSCRIPT.encode()), "call.txt"),
         })
-        assert received["text"] == TRANSCRIPT
+        assert received["text"] == TRANSCRIPT.strip()
 
     def test_analyzer_errors_arrive_as_error_events(self, client, monkeypatch):
         def failing(text, progress):

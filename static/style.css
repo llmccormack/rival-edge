@@ -242,6 +242,50 @@ main { padding-bottom: 64px; }
 .link-btn:hover { text-decoration-color: currentColor; }
 .link-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
 
+.edgar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 11px 13px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: #fbfcfe;
+}
+
+.edgar__label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-radius: 100px;
+  padding: 4px 9px;
+}
+
+.edgar__ticker, .edgar__form {
+  font: inherit;
+  font-size: 13.5px;
+  padding: 7px 9px;
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.edgar__ticker {
+  width: 92px;
+  text-transform: uppercase;
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+}
+
+.edgar__status { font-size: 12.5px; color: var(--muted); flex: 1 1 180px; min-width: 0; }
+.edgar__status a { color: var(--accent-ink); }
+.edgar__status.is-error { color: var(--bear); }
+
 .sample-row {
   display: flex;
   align-items: baseline;

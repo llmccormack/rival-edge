@@ -28,7 +28,7 @@ cp .env.example .env          # add your ANTHROPIC_API_KEY
 python app.py
 ```
 
-Open **http://127.0.0.1:5001**, click **Load sample transcript**, then **Analyze document**.
+Open **http://127.0.0.1:5001**, click **Load sample transcript**, then **Analyze document**. To analyze a real company, type a ticker in the SEC EDGAR row (requires `SEC_USER_AGENT`, below).
 
 No API key? The app still runs. It shows saved output from a real run, so you can explore every view and export a PDF without spending anything.
 
@@ -41,6 +41,12 @@ No API key? The app still runs. It shows saved output from a real run, so you ca
 Every run returns the same fields, each rendered as its own card: company overview, revenue and earnings with actual figures, year-over-year growth, guidance and outlook, three ranked risks, three ranked opportunities, three verbatim quotes with speakers, a Bullish / Neutral / Bearish call with reasoning, and a 3–4 sentence analyst summary.
 
 The model is told to use only figures that appear in the document and to write "Not disclosed" instead of guessing. On the sample transcripts, every quote in the saved output appears verbatim in the source.
+
+### Filings straight from SEC EDGAR
+
+Type a ticker, pick 10-K or 10-Q, and the app resolves the ticker to its SEC filer, finds the most recent filing of that type, and loads its text. Compare mode fetches the last two in one click. EDGAR serves filings as inline-XBRL HTML, so `documents.py` strips the machine-readable tagging, scripts, and layout markup while keeping table cells separated.
+
+SEC requires every automated request to declare a contact address. Set `SEC_USER_AGENT` in `.env` before using this; without it the app says so instead of failing silently. SEC also blocks some networks outright, in which case download the filing from sec.gov and upload it — `.htm` is an accepted upload type.
 
 ### Quarter-over-quarter comparison
 
@@ -110,11 +116,11 @@ That came with a constraint worth knowing about. Structured outputs reject `minI
 
 ```bash
 pip install -r requirements-dev.txt
-pytest          # 59 tests, ~8 seconds, no network
+pytest          # 84 tests, ~8 seconds, no network
 ruff check .
 ```
 
-The suite never calls the real API. `conftest.py` clears the API key and points the SDK at a closed local port, so an accidental live call fails fast. The Claude integration is tested against a small local server that speaks the Messages streaming protocol, which lets the tests check what is actually sent over the wire. That covers model, streaming, schema, fallback headers, request concurrency, chunk ordering, and refusal, truncation, and auth failures.
+The suite never calls the real API. `conftest.py` clears the API key and points the SDK at a closed local port, so an accidental live call fails fast. The Claude integration is tested against a small local server that speaks the Messages streaming protocol, which lets the tests check what is actually sent over the wire. That covers model, streaming, schema, fallback headers, request concurrency, chunk ordering, and refusal, truncation, and auth failures. The EDGAR tests use JSON copied from live SEC responses, so the parsing is checked against what the API actually returns.
 
 CI runs lint and tests on Python 3.10 through 3.13. A second workflow builds the static demo with `scripts/build_static_demo.py`, rendering the real template in demo mode, and deploys it to GitHub Pages on every push to `main`.
 
@@ -126,6 +132,8 @@ CI runs lint and tests on Python 3.10 through 3.13. A second workflow builds the
 rival-edge/
 ├── app.py                     Flask routes and NDJSON progress streaming
 ├── analyzer.py                Claude integration: prompts, schemas, chunking, concurrency
+├── documents.py               Ingestion: plain text, PDF, and EDGAR inline-XBRL HTML
+├── edgar.py                   SEC EDGAR: ticker to CIK, recent filings, document download
 ├── report.py                  PDF report generation (fpdf2)
 ├── templates/index.html       Page markup
 ├── static/
@@ -145,15 +153,17 @@ rival-edge/
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | For live analysis | Without it, the app serves saved examples only |
 | `PORT` | No | Defaults to `5001`, since macOS reserves 5000 for AirPlay Receiver |
+| `SEC_USER_AGENT` | For EDGAR | Contact address SEC requires on automated requests, e.g. `"Your Name you@example.com"` |
 | `RIVAL_EDGE_FALLBACKS` | No | Set to `0` to disable server-side refusal fallbacks |
 | `FLASK_DEBUG` | No | Set to `1` for auto-reload and interactive tracebacks during development |
 
 ## Tech
 
-Python 3.10+ · Flask 3 · Anthropic Python SDK 1.x (Claude Opus 5) · pypdf · fpdf2 · vanilla JavaScript and CSS, with no build step and no database. Documents are processed in memory and never written to disk.
+Python 3.10+ · Flask 3 · Anthropic Python SDK 1.x (Claude Opus 5) · pypdf · fpdf2 · vanilla JavaScript and CSS, with no build step and no database. EDGAR retrieval and HTML parsing use only the standard library. Documents are processed in memory and never written to disk.
 
 ## Limitations
 
+- **A full 10-K costs more than a transcript.** A real annual report runs around 430,000 characters, which triggers the condensing path and costs roughly a dollar to analyze. Earnings calls are a few cents.
 - **Scanned PDFs aren't supported.** Image-only PDFs have no text layer. The app detects this and asks for pasted text rather than analyzing an empty document.
 - **Comparison assumes the same company.** Two different issuers produce a comparison, just not a meaningful one.
 - **Output is a research aid, not advice.** Verify figures against the source filing before relying on them.

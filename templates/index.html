@@ -48,7 +48,8 @@
     </p>
     <ul class="hero__tags">
       <li>Earnings calls</li>
-      <li>10-K filings</li>
+      <li>10-K and 10-Q filings</li>
+      <li>Fetch from SEC EDGAR</li>
       <li>Quarter-over-quarter comparison</li>
       <li>PDF export</li>
     </ul>
@@ -108,8 +109,21 @@
 
       <!-- ------------------------------------------------ single document -->
       <div id="pane-single" role="tabpanel" aria-labelledby="tab-single">
+      {% if not demo %}
+      <form class="edgar" data-edgar="single">
+        <span class="edgar__label">SEC EDGAR</span>
+        <input class="edgar__ticker" type="text" maxlength="8" spellcheck="false"
+               placeholder="Ticker" aria-label="Ticker symbol">
+        <select class="edgar__form" aria-label="Filing type">
+          <option value="10-K">10-K</option>
+          <option value="10-Q">10-Q</option>
+        </select>
+        <button type="submit" class="btn btn--ghost btn--sm">Fetch latest</button>
+        <span class="edgar__status" role="status"></span>
+      </form>
+      {% endif %}
         <div class="field-label">
-          <span>Earnings call transcript or 10-K</span>
+          <span>Earnings call transcript or filing</span>
           <span class="field-label__tools">
             <button type="button" class="link-btn" data-sample="single">Load sample transcript</button>
             <span class="counter" data-counter-for="text">0 characters</span>
@@ -126,18 +140,32 @@
           </span>
           <span>
             <span class="dropzone__title">Or upload a file</span><br>
-            <span class="dropzone__hint">Drop a .txt or .pdf here, or click to browse</span>
+            <span class="dropzone__hint">Drop a .txt, .pdf or .htm file here</span>
           </span>
         </button>
-        <input type="file" id="file" accept=".txt,.pdf" hidden>
+        <input type="file" id="file" accept=".txt,.pdf,.htm,.html" hidden>
       </div>
 
       <!-- ----------------------------------------------- compare quarters -->
       <div id="pane-compare" role="tabpanel" aria-labelledby="tab-compare" hidden>
         <div class="sample-row">
-          <span>Two transcripts from the same company, earlier period first.</span>
+          <span>Two documents from the same company, earlier period first.</span>
           <button type="button" class="link-btn" data-sample="compare">Load sample quarters</button>
         </div>
+      {% if not demo %}
+      <form class="edgar" data-edgar="compare">
+        <span class="edgar__label">SEC EDGAR</span>
+        <input class="edgar__ticker" type="text" maxlength="8" spellcheck="false"
+               placeholder="Ticker" aria-label="Ticker symbol">
+        <select class="edgar__form" aria-label="Filing type">
+          <option value="10-K">10-K</option>
+          <option value="10-Q">10-Q</option>
+        </select>
+        <button type="submit" class="btn btn--ghost btn--sm">Fetch last two</button>
+        <span class="edgar__status" role="status"></span>
+      </form>
+      {% endif %}
+
         <div class="compare-grid">
           {% for slot, label, placeholder in [
             ('a', 'Earlier period', "Paste the earlier quarter's transcript…"),
@@ -158,10 +186,10 @@
               </span>
               <span>
                 <span class="dropzone__title">Or upload a file</span><br>
-                <span class="dropzone__hint">.txt or .pdf</span>
+                <span class="dropzone__hint">.txt, .pdf or .htm</span>
               </span>
             </button>
-            <input type="file" id="file_{{ slot }}" accept=".txt,.pdf" hidden>
+            <input type="file" id="file_{{ slot }}" accept=".txt,.pdf,.htm,.html" hidden>
           </div>
           {% endfor %}
         </div>

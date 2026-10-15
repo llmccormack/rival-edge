@@ -6,6 +6,7 @@ Routes:
     POST /api/analyze            analyze one document     -> NDJSON progress stream
     POST /api/compare            compare two periods      -> NDJSON progress stream
     POST /api/export             render results as a PDF  -> application/pdf
+    GET  /api/edgar              fetch a filing from SEC EDGAR by ticker
     GET  /api/samples/<name>     bundled sample transcript
     GET  /api/examples/<kind>    saved output from a real run, viewable without a key
 """
@@ -25,14 +26,9 @@ from typing import Any
 from dotenv import load_dotenv
 from flask import Flask, Response, abort, jsonify, render_template, request, send_file
 
-from analyzer import (
-    MODEL_LABEL,
-    AnalyzerError,
-    Progress,
-    analyze_document,
-    compare_documents,
-    extract_text_from_pdf,
-)
+import edgar
+from analyzer import MODEL_LABEL, AnalyzerError, Progress, analyze_document, compare_documents
+from documents import SUPPORTED_EXTENSIONS, DocumentError, extract
 from report import build_analysis_pdf, build_comparison_pdf, slugify
 
 load_dotenv()
@@ -48,8 +44,6 @@ EXAMPLE_OUTPUTS = {
     "analysis": "example-analysis.json",
     "comparison": "example-comparison.json",
 }
-
-ALLOWED_EXTENSIONS = {".txt", ".pdf"}
 
 REPO_URL = "https://github.com/llmccormack/rival-edge"
 
@@ -67,18 +61,19 @@ def read_document(text_field: str, file_field: str) -> str:
     upload = request.files.get(file_field)
 
     if upload and upload.filename:
-        extension = os.path.splitext(upload.filename)[1].lower()
-        if extension not in ALLOWED_EXTENSIONS:
-            raise AnalyzerError(f"Unsupported file type '{extension}'. Upload a .txt or .pdf.")
-        if extension == ".pdf":
-            return extract_text_from_pdf(io.BytesIO(upload.read()))
-        return upload.read().decode("utf-8", errors="replace")
+        try:
+            return extract(upload.filename, upload.read())
+        except DocumentError as exc:
+            raise AnalyzerError(str(exc)) from exc
 
     pasted = (request.form.get(text_field) or "").strip()
     if pasted:
         return pasted
 
-    raise AnalyzerError("No document provided. Paste text or upload a .txt or .pdf file.")
+    raise AnalyzerError(
+        "No document provided. Paste text, upload a file "
+        f"({', '.join(sorted(SUPPORTED_EXTENSIONS))}), or fetch a filing from EDGAR."
+    )
 
 
 def examples_available() -> bool:
@@ -180,6 +175,27 @@ def api_export():
         as_attachment=True,
         download_name=filename,
     )
+
+
+@app.get("/api/edgar")
+def api_edgar():
+    """Fetch one filing from SEC EDGAR by ticker, newest first."""
+    ticker = (request.args.get("ticker") or "").strip()
+    form = (request.args.get("form") or "10-K").strip().upper()
+    try:
+        index = int(request.args.get("index", "0"))
+    except ValueError:
+        index = 0
+
+    if not ticker:
+        return jsonify({"error": "Enter a ticker symbol."}), 400
+
+    try:
+        filing = edgar.fetch(ticker, form, index)
+    except edgar.EdgarError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    return jsonify(filing.as_dict())
 
 
 @app.get("/api/samples/<name>")

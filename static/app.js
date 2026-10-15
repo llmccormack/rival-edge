@@ -183,6 +183,75 @@
     }
   }));
 
+  // --------------------------------------------------------------- EDGAR
+
+  const edgarForms = $$("[data-edgar]");
+
+  const describeFiling = (filing) => `${filing.company} · ${filing.form} filed ${filing.filed}` +
+    ` · ${filing.characters.toLocaleString()} characters · ` +
+    `<a href="${filing.url}" target="_blank" rel="noopener">view on EDGAR</a>`;
+
+  const fetchFiling = async (ticker, form, index) => {
+    const query = new URLSearchParams({ ticker, form, index: String(index) });
+    const response = await fetch(`/api/edgar?${query}`);
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "EDGAR request failed.");
+    return payload;
+  };
+
+  edgarForms.forEach((form) => {
+    const status = form.querySelector(".edgar__status");
+    const submit = form.querySelector("button[type=submit]");
+
+    const setStatus = (html, isError) => {
+      status.innerHTML = html;
+      status.classList.toggle("is-error", Boolean(isError));
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      hideAlert();
+
+      const ticker = form.querySelector(".edgar__ticker").value.trim();
+      const formType = form.querySelector(".edgar__form").value;
+      if (!ticker) {
+        setStatus("Enter a ticker symbol.", true);
+        return;
+      }
+
+      const compare = form.dataset.edgar === "compare";
+      submit.disabled = true;
+      setStatus(compare
+        ? `Fetching the last two ${formType} filings…`
+        : `Fetching the latest ${formType}…`);
+
+      try {
+        if (compare) {
+          // index 1 is the earlier filing, so it goes in the left-hand slot.
+          const [later, earlier] = await Promise.all([
+            fetchFiling(ticker, formType, 0),
+            fetchFiling(ticker, formType, 1)
+          ]);
+          setText("text_a", earlier.text);
+          setText("text_b", later.text);
+          resetDropzone("file_a");
+          resetDropzone("file_b");
+          setStatus(`${earlier.company} · ${formType} ${earlier.period} → ${later.period}` +
+            ` · ${(earlier.characters + later.characters).toLocaleString()} characters`);
+        } else {
+          const filing = await fetchFiling(ticker, formType, 0);
+          setText("text", filing.text);
+          resetDropzone("file");
+          setStatus(describeFiling(filing));
+        }
+      } catch (error) {
+        setStatus(escapeHtml(error.message), true);
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  });
+
   // ---------------------------------------------------------- alert / busy
 
   const showAlert = (message) => {
@@ -198,7 +267,9 @@
     $("#loading").classList.toggle("is-active", busy);
     $("#run").disabled = busy;
     $("#export").disabled = busy;
-    $$("[data-sample], [data-example]").forEach((button) => { button.disabled = busy; });
+    $$("[data-sample], [data-example], [data-edgar] button").forEach((button) => {
+      button.disabled = busy;
+    });
     clearInterval(elapsedTimer);
 
     if (busy) {
