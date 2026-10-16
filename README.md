@@ -60,6 +60,14 @@ Analysis takes from 20 seconds to a few minutes. The UI shows each stage as it a
 
 ![Both periods analyzed in parallel](docs/screenshot-progress.png)
 
+### A one-page investment memo
+
+From any result, *Draft memo* produces the disclosure-backed half of a pitch: the situation, four key figures, a bull and bear case with evidence for each claim, dated catalysts, two quotes worth saying out loud, and — the part that keeps it honest — the questions this document cannot answer, which need consensus, peer or valuation data.
+
+![One-page investment memo](docs/screenshot-memo.png)
+
+It exports as a single page, set as a research note: a two-column grid with section labels in the gutter, serif body text, hairline rules, and colour reserved for one marker. The layout renders at progressively tighter settings until it fits one page, so a wordy quarter cannot spill onto a second. See [`docs/example-memo.pdf`](docs/example-memo.pdf).
+
 ### PDF export
 
 Both views export as an A4 report with a delta table, directional colour coding, and page breaks that respect table rows. See [`docs/example-comparison.pdf`](docs/example-comparison.pdf).
@@ -85,6 +93,7 @@ flowchart LR
 | --- | --- | --- | --- | --- |
 | Single earnings call | 1 | ~25 s | 4.5k / 1.8k | $0.07 |
 | Two-quarter comparison | 3 | ~55 s | 21k / 6.2k | $0.26 |
+| Investment memo | 1 | ~18 s | 7.1k / 1.5k | $0.07 |
 
 <sub>Measured on the sample transcripts. Cost at Claude Opus 5 list pricing ($5 / $25 per million tokens) when measured.</sub>
 
@@ -108,6 +117,10 @@ That came with a constraint worth knowing about. Structured outputs reject `minI
 
 **Long runs can't hit a timeout or a length cap.** Every request streams, so multi-minute calls don't hit HTTP timeouts. Opus 5 thinks by default, and thinking counts toward `max_tokens`, so the ceiling is set high (64k) to leave room for reasoning. The call is still billed only for tokens actually used.
 
+**The memo refuses to fake a thesis.** It is told it does not know the share price and must not imply one, so there is no target, multiple, or buy/sell. What a pitch still needs — valuation, consensus, peer comparison — becomes the memo's "Still to answer" section instead of being invented. The PDF footer carries the same disclaimer.
+
+**Print typography is treated as real typography.** The PDFs use Windows-1252 rather than fpdf2's Latin-1 default, so curly quotes, en and em dashes and ellipses survive from the filing instead of being flattened to typewriter marks, and a conservative pass upgrades straight quotes where it is unambiguous. The screen applies the same rules, so both read alike.
+
 **Refusals degrade gracefully.** Requests opt into server-side refusal fallbacks, so if a safety classifier declines, the API re-runs the request on a fallback model within the same call. If the whole chain still refuses, the user gets a clear message instead of an empty card.
 
 ---
@@ -116,7 +129,7 @@ That came with a constraint worth knowing about. Structured outputs reject `minI
 
 ```bash
 pip install -r requirements-dev.txt
-pytest          # 84 tests, ~8 seconds, no network
+pytest          # 92 tests, ~8 seconds, no network
 ruff check .
 ```
 
@@ -166,6 +179,7 @@ Python 3.10+ · Flask 3 · Anthropic Python SDK 1.x (Claude Opus 5) · pypdf · 
 - **A full 10-K costs more than a transcript.** A real annual report runs around 430,000 characters, which triggers the condensing path and costs roughly a dollar to analyze. Earnings calls are a few cents.
 - **Scanned PDFs aren't supported.** Image-only PDFs have no text layer. The app detects this and asks for pasted text rather than analyzing an empty document.
 - **Comparison assumes the same company.** Two different issuers produce a comparison, just not a meaningful one.
+- **The memo is half a pitch.** It carries what the company disclosed. The thesis, the valuation and the variant view are yours.
 - **Output is a research aid, not advice.** Verify figures against the source filing before relying on them.
 
 ## License
