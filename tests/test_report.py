@@ -33,11 +33,12 @@ def test_comparison_report_includes_row_commentary():
     assert "DETERIORATING" in text
 
 
-def test_typographic_and_non_latin_characters_do_not_crash():
+def test_typography_survives_and_unsupported_characters_do_not_crash():
     data = fixtures.analysis()
     data["analyst_summary"] = "Curly “quotes”, an em—dash, an ellipsis…, € and 日本語."
     text = pdf_text(report.build_analysis_pdf(data))
-    assert '"quotes"' in text
+    # Windows-1252 keeps real punctuation instead of flattening it to ASCII.
+    assert "“quotes”" in text and "em—dash" in text
 
 
 def test_long_comparison_table_breaks_across_pages():
@@ -78,3 +79,35 @@ def test_report_text_colors_meet_wcag_aa():
     white = (255, 255, 255)
     for name in ("INK", "SLATE", "MUTED", "ACCENT", "BULLISH", "BEARISH", "NEUTRAL"):
         assert _contrast(getattr(report, name), white) >= 4.5, name
+
+
+class TestMemo:
+    def test_fits_one_page(self):
+        reader = PdfReader(io.BytesIO(report.build_memo_pdf(fixtures.memo())))
+        assert len(reader.pages) == 1
+
+    def test_verbose_content_still_fits_one_page(self):
+        # The fit loop exists so an unusually wordy quarter cannot overflow.
+        data = fixtures.memo()
+        data["situation"] = data["situation"] * 3
+        for case in ("bull_case", "bear_case"):
+            for item in data[case]:
+                item["evidence"] = item["evidence"] * 2
+        data["open_questions"] = [q * 2 for q in data["open_questions"]]
+        reader = PdfReader(io.BytesIO(report.build_memo_pdf(data)))
+        assert len(reader.pages) == 1
+
+    def test_every_section_is_present(self):
+        text = pdf_text(report.build_memo_pdf(fixtures.memo()))
+        for heading in ("SITUATION", "THE TWO CASES", "CATALYSTS", "STILL TO ANSWER",
+                        "IN THEIR WORDS"):
+            assert heading in text
+        assert "Testco Freight, Inc." in text
+        assert "BEARISH" in text
+        assert "$1.39B" in text
+        assert "January" in text
+
+    def test_disclaimer_is_on_the_page(self):
+        text = pdf_text(report.build_memo_pdf(fixtures.memo()))
+        assert "No valuation, consensus or peer data" in text
+        assert "Not investment advice" in text

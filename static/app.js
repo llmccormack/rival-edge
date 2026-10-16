@@ -18,6 +18,14 @@
 
   const slug = (value) => String(value || "").toLowerCase().replace(/[^a-z]/g, "");
 
+  // Matches report.py's typography so the screen and the PDF read alike.
+  const smartQuotes = (value) => String(value == null ? "" : value)
+    .replace(/(\w)'(\w)/g, "$1\u2019$2")
+    .replace(/"([^"\n]{1,400})"/g, "\u201c$1\u201d")
+    .replace(/(^|[^\w'])'([^'\n]{1,400})'(?!\w)/g, "$1\u2018$2\u2019");
+
+  const prose = (value) => escapeHtml(smartQuotes(value));
+
   const compactNumber = (value) => value >= 1000
     ? `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}k`
     : String(value);
@@ -73,6 +81,8 @@
 
   let mode = "single";
   let lastResult = null;
+  let analysisResult = null;
+  let memoResult = null;
   const files = {};
 
   // ---------------------------------------------------------------- tabs
@@ -425,12 +435,94 @@
       </div>`;
   }
 
+  function refreshViews() {
+    $("#viewswitch").hidden = !(analysisResult && memoResult);
+    if ($("#memo")) $("#memo").hidden = Boolean(memoResult);
+  }
+
+  function renderMemo(memo) {
+    const figures = (memo.key_figures || []).map((figure) => `
+      <div class="memo__figure">
+        <div class="memo__figure-label">${escapeHtml(figure.label)}</div>
+        <div class="memo__figure-value">${escapeHtml(figure.value)}</div>
+        <div class="memo__figure-change">${escapeHtml(figure.change || "")}</div>
+      </div>`).join("");
+
+    const caseColumn = (title, items, kind) => `
+      <div class="memo__case memo__case--${kind}">
+        <div class="memo__case-title">${escapeHtml(title)}</div>
+        <ol class="memo__case-list">${(items || []).map((item) => `
+          <li>
+            <p class="memo__claim">${prose(item.claim)}</p>
+            <p class="memo__evidence">${prose(item.evidence)}</p>
+          </li>`).join("")}</ol>
+      </div>`;
+
+    const section = (label, body) => `
+      <section class="memo__section">
+        <h3 class="memo__label">${escapeHtml(label)}</h3>
+        <div class="memo__body">${body}</div>
+      </section>`;
+
+    return `
+      <article class="memo">
+        <header class="memo__head">
+          <div class="memo__masthead">
+            <span>Rival Edge</span>
+            <span>Investment memo</span>
+          </div>
+          <div class="memo__title">
+            <h2>${escapeHtml(memo.company_name)}</h2>
+            <span class="memo__read memo__read--${slug(memo.disclosure_read)}">
+              <i></i>${escapeHtml(memo.disclosure_read)}
+            </span>
+          </div>
+          <p class="memo__basis">${escapeHtml(memo.basis)}</p>
+          <p class="memo__read-line">${prose(memo.disclosure_reason)}</p>
+        </header>
+
+        <div class="memo__figures">${figures}</div>
+
+        ${section("Situation", `<p class="memo__lede">${prose(memo.situation)}</p>`)}
+        ${section("The two cases", `<div class="memo__cases">
+            ${caseColumn("Bull", memo.bull_case, "bull")}
+            ${caseColumn("Bear", memo.bear_case, "bear")}
+          </div>`)}
+        ${section("Catalysts", `<ul class="memo__catalysts">${(memo.catalysts || []).map((c) => `
+            <li><span>${prose(c.event)}</span><time>${escapeHtml(c.timing)}</time></li>`).join("")}</ul>`)}
+        ${section("Still to answer", `<ol class="memo__questions">${(memo.open_questions || []).map((q) => `
+            <li>${prose(q)}</li>`).join("")}</ol>`)}
+        ${section("In their words", (memo.quotes || []).map((q) => `
+            <blockquote class="memo__quote">
+              <p>“${prose(q.quote)}”</p>
+              <cite>${escapeHtml(q.speaker)}</cite>
+            </blockquote>`).join(""))}
+
+        <footer class="memo__foot">
+          Drafted from company disclosure. No valuation, consensus or peer data. Not investment advice.
+        </footer>
+      </article>`;
+  }
+
   function showResult(resultMode, data, options) {
     const opts = options || {};
     const usage = (data._meta || {}).usage;
 
     lastResult = { mode: resultMode, data };
-    $("#results-title").textContent = resultMode === "single" ? "Analysis" : "Period comparison";
+    if (resultMode === "memo") {
+      memoResult = { mode: resultMode, data, options: opts };
+    } else {
+      analysisResult = { mode: resultMode, data, options: opts };
+    }
+    refreshViews();
+    $$(".viewswitch__option").forEach((button) => {
+      button.classList.toggle("is-on", button.dataset.view ===
+        (resultMode === "memo" ? "memo" : "analysis"));
+    });
+
+    $("#results-title").textContent = resultMode === "memo"
+      ? "Investment memo"
+      : resultMode === "single" ? "Analysis" : "Period comparison";
     const generated = data._meta && data._meta.generated_at
       ? `, generated ${escapeHtml(data._meta.generated_at)}` : "";
     $("#provenance").innerHTML = opts.example
@@ -438,7 +530,8 @@
          sample transcripts${generated}</span>${usageLine(usage)}`
       : usageLine(usage);
     $("#results-body").innerHTML =
-      resultMode === "single" ? renderAnalysis(data) : renderComparison(data);
+      resultMode === "memo" ? renderMemo(data)
+        : resultMode === "single" ? renderAnalysis(data) : renderComparison(data);
     $("#results").classList.add("is-active");
     $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -517,6 +610,7 @@
         if (event.type === "result") {
           finished = true;
           $$("#progress-log li.is-current").forEach((li) => li.classList.replace("is-current", "is-done"));
+          memoResult = null;
           showResult(runMode, event.data);
         }
         if (event.type === "error") { finished = true; showAlert(event.error); }
@@ -531,15 +625,77 @@
 
   $("#run").addEventListener("click", run);
 
+  // ---------------------------------------------------------------- memo
+
+  const memoButton = $("#memo");
+
+  if (memoButton) {
+    memoButton.addEventListener("click", async () => {
+      if (!analysisResult) {
+        showAlert("Run an analysis first, then draft the memo.");
+        return;
+      }
+      hideAlert();
+
+      const body = new FormData();
+      body.append("result", JSON.stringify(analysisResult.data));
+      if (analysisResult.mode === "single") {
+        body.append("text", $("#text").value);
+      } else {
+        body.append("text", $("#text_a").value);
+        body.append("text_b", $("#text_b").value);
+      }
+
+      setBusy(true);
+      try {
+        const response = await fetch("/api/memo", { method: "POST", body });
+        if (!response.ok) {
+          const failure = await response.json().catch(() => ({}));
+          showAlert(failure.error || "The memo could not be drafted.");
+          return;
+        }
+        let finished = false;
+        await readEvents(response, (event) => {
+          if (event.type === "progress") addProgress(event.message);
+          if (event.type === "result") { finished = true; showResult("memo", event.data); }
+          if (event.type === "error") { finished = true; showAlert(event.error); }
+        });
+        if (!finished) showAlert("The connection closed before the memo was finished.");
+      } catch (error) {
+        showAlert("Could not reach the server. Is the Flask app still running?");
+      } finally {
+        setBusy(false);
+      }
+    });
+  }
+
+  $$(".viewswitch__option").forEach((button) => button.addEventListener("click", () => {
+    const wanted = button.dataset.view === "memo" ? memoResult : analysisResult;
+    if (wanted) showResult(wanted.mode, wanted.data, wanted.options);
+  }));
+
   // ------------------------------------------------------------- examples
 
   $$("[data-example]").forEach((button) => button.addEventListener("click", async () => {
     hideAlert();
-    const kind = mode === "single" ? "analysis" : "comparison";
+    const kind = button.dataset.example === "memo"
+      ? "memo"
+      : mode === "single" ? "analysis" : "comparison";
     try {
       const response = await fetch(exampleUrl(kind));
       if (!response.ok) throw new Error("missing");
-      showResult(mode, await response.json(), { example: true });
+      const payload = await response.json();
+      if (kind !== "memo") memoResult = null;
+      showResult(kind === "memo" ? "memo" : mode, payload, { example: true });
+
+      // The saved memo rides along, so the demo can switch to it.
+      if (kind !== "memo") {
+        const memo = await fetch(exampleUrl("memo")).catch(() => null);
+        if (memo && memo.ok) {
+          memoResult = { mode: "memo", data: await memo.json(), options: { example: true } };
+          refreshViews();
+        }
+      }
     } catch (error) {
       showAlert("No saved example is available. Run scripts/generate_examples.py to create one.");
     }
@@ -552,7 +708,8 @@
 
     if (DEMO) {
       const link = document.createElement("a");
-      link.href = `docs/example-${lastResult.mode === "single" ? "analysis" : "comparison"}.pdf`;
+      const file = { single: "analysis", compare: "comparison", memo: "memo" }[lastResult.mode];
+      link.href = `docs/example-${file}.pdf`;
       link.download = "";
       document.body.appendChild(link);
       link.click();

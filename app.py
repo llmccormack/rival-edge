@@ -5,6 +5,7 @@ Routes:
     GET  /                       single-page UI
     POST /api/analyze            analyze one document     -> NDJSON progress stream
     POST /api/compare            compare two periods      -> NDJSON progress stream
+    POST /api/memo               draft a one-page memo    -> NDJSON progress stream
     POST /api/export             render results as a PDF  -> application/pdf
     GET  /api/edgar              fetch a filing from SEC EDGAR by ticker
     GET  /api/samples/<name>     bundled sample transcript
@@ -27,9 +28,16 @@ from dotenv import load_dotenv
 from flask import Flask, Response, abort, jsonify, render_template, request, send_file
 
 import edgar
-from analyzer import MODEL_LABEL, AnalyzerError, Progress, analyze_document, compare_documents
+from analyzer import (
+    MODEL_LABEL,
+    AnalyzerError,
+    Progress,
+    analyze_document,
+    compare_documents,
+    draft_memo,
+)
 from documents import SUPPORTED_EXTENSIONS, DocumentError, extract
-from report import build_analysis_pdf, build_comparison_pdf, slugify
+from report import build_analysis_pdf, build_comparison_pdf, build_memo_pdf, slugify
 
 load_dotenv()
 
@@ -43,6 +51,7 @@ SAMPLE_TRANSCRIPTS = {
 EXAMPLE_OUTPUTS = {
     "analysis": "example-analysis.json",
     "comparison": "example-comparison.json",
+    "memo": "example-memo.json",
 }
 
 REPO_URL = "https://github.com/llmccormack/rival-edge"
@@ -154,6 +163,20 @@ def api_compare():
     return stream_job(lambda progress: compare_documents(earlier, later, progress))
 
 
+@app.post("/api/memo")
+def api_memo():
+    """Draft a one-page memo from a result the user already has on screen."""
+    try:
+        result = json.loads(request.form.get("result") or "null")
+    except json.JSONDecodeError:
+        result = None
+    if not isinstance(result, dict):
+        return jsonify({"error": "Run an analysis first, then draft the memo."}), 400
+
+    documents = [text for text in (request.form.get("text"), request.form.get("text_b")) if text]
+    return stream_job(lambda progress: draft_memo(result, documents, progress))
+
+
 @app.post("/api/export")
 def api_export():
     payload = request.get_json(silent=True) or {}
@@ -161,7 +184,10 @@ def api_export():
     if not isinstance(data, dict):
         return jsonify({"error": "Nothing to export."}), 400
 
-    if payload.get("mode") == "compare":
+    if payload.get("mode") == "memo":
+        pdf_bytes = build_memo_pdf(data)
+        filename = f"rival-edge-memo-{slugify(data.get('company_name', 'memo'))}.pdf"
+    elif payload.get("mode") == "compare":
         pdf_bytes = build_comparison_pdf(data)
         company = data.get("later", {}).get("company_name", "company")
         filename = f"rival-edge-comparison-{slugify(company)}.pdf"

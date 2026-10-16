@@ -155,3 +155,46 @@ class TestExport:
 
     def test_nothing_to_export(self, client):
         assert client.post("/api/export", json={}).status_code == 400
+
+
+class TestMemoRoute:
+    def test_requires_a_prior_result(self, client):
+        response = client.post("/api/memo", data={"text": TRANSCRIPT})
+        assert response.status_code == 400
+        assert "Run an analysis first" in response.get_json()["error"]
+
+    def test_streams_a_memo(self, client, monkeypatch):
+        received = {}
+
+        def fake_memo(result, documents, progress):
+            received.update(result=result, documents=documents)
+            progress("Drafting the memo")
+            return fixtures.memo()
+
+        monkeypatch.setattr(app_module, "draft_memo", fake_memo)
+        events = read_events(client.post("/api/memo", data={
+            "result": json.dumps(fixtures.analysis()),
+            "text": TRANSCRIPT,
+        }))
+
+        assert [e["type"] for e in events] == ["progress", "result"]
+        assert events[-1]["data"]["disclosure_read"] == "Bearish"
+        assert received["result"]["company_name"] == fixtures.ANALYSIS["company_name"]
+        assert received["documents"] == [TRANSCRIPT]
+
+    def test_both_periods_reach_the_memo(self, client, monkeypatch):
+        received = {}
+        monkeypatch.setattr(app_module, "draft_memo",
+                            lambda result, documents, progress: received.update(docs=documents) or fixtures.memo())
+        client.post("/api/memo", data={
+            "result": json.dumps(fixtures.comparison_payload()),
+            "text": "earlier period text",
+            "text_b": "later period text",
+        })
+        assert received["docs"] == ["earlier period text", "later period text"]
+
+    def test_memo_pdf_export(self, client):
+        response = client.post("/api/export", json={"mode": "memo", "data": fixtures.memo()})
+        assert response.status_code == 200
+        assert response.data[:4] == b"%PDF"
+        assert "rival-edge-memo-testco-freight-inc.pdf" in response.headers["Content-Disposition"]

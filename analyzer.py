@@ -256,10 +256,132 @@ COMPARISON_SCHEMA: dict[str, Any] = {
 }
 
 
+MEMO_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "company_name": {"type": "string"},
+        "basis": {
+            "type": "string",
+            "description": "The documents this memo rests on, e.g. 'Q3 FY2025 earnings call'.",
+        },
+        "situation": {
+            "type": "string",
+            "description": (
+                "2-3 sentences, under 420 characters: what just happened at this company, "
+                "in an analyst's voice."
+            ),
+        },
+        "key_figures": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "label": {"type": "string", "description": "Short metric name, under 24 characters."},
+                    "value": {"type": "string", "description": "The figure itself, under 16 characters."},
+                    "change": {"type": "string", "description": "Change versus prior period, or empty."},
+                    "direction": {"type": "string", "enum": ["up", "down", "flat", "none"]},
+                },
+                "required": ["label", "value", "change", "direction"],
+                "additionalProperties": False,
+            },
+            "description": "Exactly 4 figures a portfolio manager would want on one line.",
+        },
+        "bull_case": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "claim": {"type": "string", "description": "One line, under 70 characters."},
+                    "evidence": {
+                        "type": "string",
+                        "description": "One sentence citing the document, under 170 characters.",
+                    },
+                },
+                "required": ["claim", "evidence"],
+                "additionalProperties": False,
+            },
+            "description": "Exactly 3, strongest first.",
+        },
+        "bear_case": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "claim": {"type": "string", "description": "One line, under 70 characters."},
+                    "evidence": {
+                        "type": "string",
+                        "description": "One sentence citing the document, under 170 characters.",
+                    },
+                },
+                "required": ["claim", "evidence"],
+                "additionalProperties": False,
+            },
+            "description": "Exactly 3, strongest first.",
+        },
+        "catalysts": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "event": {"type": "string", "description": "What happens, under 60 characters."},
+                    "timing": {
+                        "type": "string",
+                        "description": "When, as disclosed, under 26 characters. 'Not dated' if absent.",
+                    },
+                },
+                "required": ["event", "timing"],
+                "additionalProperties": False,
+            },
+            "description": "Exactly 3 dated or datable events from the document.",
+        },
+        "open_questions": _string_list(
+            "Exactly 3 questions this document cannot answer, that need market data, "
+            "consensus estimates, or peer comparison. These are what the analyst must do "
+            "next. One sentence each, under 170 characters."
+        ),
+        "quotes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "speaker": {"type": "string"},
+                    "quote": {"type": "string", "description": "Verbatim, under 165 characters."},
+                },
+                "required": ["speaker", "quote"],
+                "additionalProperties": False,
+            },
+            "description": "Exactly 2 quotes worth citing aloud in a pitch.",
+        },
+        "disclosure_read": {"type": "string", "enum": ["Bullish", "Neutral", "Bearish"]},
+        "disclosure_reason": {"type": "string", "description": "One sentence."},
+    },
+    "required": [
+        "company_name",
+        "basis",
+        "situation",
+        "key_figures",
+        "bull_case",
+        "bear_case",
+        "catalysts",
+        "open_questions",
+        "quotes",
+        "disclosure_read",
+        "disclosure_reason",
+    ],
+    "additionalProperties": False,
+}
+
+
 # Maximum list lengths the UI and PDF are designed around. The model usually
 # respects the descriptions, but not always (a comparison once came back with
 # 7 deltas), so results are trimmed to these after parsing.
 LIST_LIMITS: dict[str, int] = {
+    "key_figures": 4,
+    "bull_case": 3,
+    "bear_case": 3,
+    "catalysts": 3,
+    "open_questions": 3,
+    "quotes": 2,
     "top_risks": 3,
     "top_opportunities": 3,
     "key_quotes": 3,
@@ -333,6 +455,32 @@ Rules:
 - Where a metric is not comparable across the two periods, say so explicitly.
 - "direction" describes movement from the earlier period to the later period.
 - Be blunt about deterioration; do not soften it.
+
+Return only valid JSON, no other text."""
+
+
+MEMO_SYSTEM = """You are a senior equity research analyst drafting the company \
+section of a one-page investment memo, for an analyst who will pitch this name.
+
+You will receive a structured analysis and the source document it came from.
+Write the part of the memo that the company's own disclosure can support.
+
+Rules:
+- Every claim rests on the document. Cite the figure or the language that supports it.
+- Never estimate, extrapolate, or invent a number.
+- No valuation, price target, multiple, or recommendation to buy or sell. You do \
+  not know the share price and must not imply one.
+- The bull and bear cases are what the disclosure itself supports on each side, \
+  not a balanced-sounding pair. If the evidence leans one way, say so in the \
+  disclosure_read and let the weaker side be thin.
+- open_questions are the things this document cannot settle and the analyst must \
+  check elsewhere: valuation, consensus, peer comparison, market share. Make them \
+  specific to this company, not generic research advice.
+- Quotes are verbatim and attributed.
+- Write for someone who will say these words out loud. Short sentences, real \
+  numbers, no filler.
+- This is a one-page memo. Respect every length limit in the schema; a long \
+  answer is a worse answer here.
 
 Return only valid JSON, no other text."""
 
@@ -537,6 +685,43 @@ def _period_block(label: str, analysis: dict[str, Any], document: str) -> str:
         f"<{label}>\n<analysis>\n{json.dumps(public, indent=2, ensure_ascii=False)}\n</analysis>\n"
         f"<document>\n{document}\n</document>\n</{label}>"
     )
+
+
+def draft_memo(
+    result: dict[str, Any],
+    documents: list[str],
+    progress: Progress = _no_progress,
+) -> dict[str, Any]:
+    """
+    Draft the disclosure-backed half of a one-page pitch memo.
+
+    `result` is an analysis or a comparison already produced by this module, and
+    `documents` are the source texts behind it. Both go to the model: the
+    analysis for structure, the source for detail the summary left out.
+    """
+    stats = RunStats()
+    progress("Drafting the memo")
+
+    public = {key: value for key, value in result.items() if not key.startswith("_")}
+    if "comparison" in public:
+        for period in ("earlier", "later"):
+            public[period] = {
+                k: v for k, v in public.get(period, {}).items() if not k.startswith("_")
+            }
+
+    sources = "\n\n".join(
+        f"<document index=\"{index}\">\n{text}\n</document>"
+        for index, text in enumerate(documents, start=1)
+        if text
+    )
+    memo = _call_claude(
+        MEMO_SYSTEM,
+        f"<analysis>\n{json.dumps(public, indent=2, ensure_ascii=False)}\n</analysis>\n\n{sources}",
+        stats,
+        MEMO_SCHEMA,
+    )
+    memo["_meta"] = {"usage": stats.as_dict()}
+    return memo
 
 
 def compare_documents(

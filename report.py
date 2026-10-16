@@ -7,6 +7,7 @@ No headless browser involved: layout is computed directly.
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Any
 
@@ -36,19 +37,29 @@ def slugify(value: str) -> str:
     return "-".join(part for part in cleaned.split("-") if part)[:60] or "report"
 
 
-def latin1(value: Any) -> str:
+def pdf_text(value: Any) -> str:
     """
-    fpdf2's core fonts are Latin-1 only. Map the typographic characters that
-    show up constantly in filings, then drop anything still unrepresentable.
+    Encode for the core PDF fonts, which speak Windows-1252.
+
+    That covers real curly quotes, en and em dashes, and ellipses, so filings
+    keep their typography instead of being flattened to typewriter marks.
+    Anything outside the set (CJK, say) is replaced rather than crashing.
     """
     text = str(value)
     for source, target in (
-        ("‘", "'"), ("’", "'"), ("“", '"'), ("”", '"'),
-        ("–", "-"), ("—", "-"), ("…", "..."), ("•", "-"),
-        (" ", " "), ("−", "-"), ("­", ""),
+        ("\u00a0", " "), ("\u00ad", ""), ("\u2212", "\u2013"), ("\u2022", "\u00b7"),
     ):
         text = text.replace(source, target)
-    return text.encode("latin-1", "replace").decode("latin-1")
+    text = _smart_quotes(text)
+    return text.encode("windows-1252", "replace").decode("windows-1252")
+
+
+def _smart_quotes(text: str) -> str:
+    """Turn typewriter marks into typographic ones, conservatively."""
+    text = re.sub(r"(?<=\w)'(?=\w)", "\u2019", text)              # don\u2019t, September\u2019s
+    text = re.sub(r'"([^"\n]{1,400})"', "\u201c\\1\u201d", text)         # paired doubles
+    text = re.sub(r"(?<![\w'])'([^'\n]{1,400})'(?![\w])", "\u2018\\1\u2019", text)
+    return text
 
 
 class Report(FPDF):
@@ -57,6 +68,7 @@ class Report(FPDF):
     def __init__(self, subtitle: str):
         super().__init__(orientation="P", unit="mm", format="A4")
         self.subtitle = subtitle
+        self.core_fonts_encoding = "windows-1252"
         self.set_auto_page_break(auto=True, margin=20)
         self.set_margins(18, 16, 18)
 
@@ -72,7 +84,7 @@ class Report(FPDF):
         self.set_x(18)
         self.set_font("Helvetica", "", 8)
         self.set_text_color(150, 172, 192)
-        self.cell(120, 5, text=latin1(self.subtitle))
+        self.cell(120, 5, text=pdf_text(self.subtitle))
 
         self.set_xy(-70, 12)
         self.set_font("Helvetica", "", 8)
@@ -98,10 +110,10 @@ class Report(FPDF):
     def title_block(self, company: str, meta_line: str):
         self.set_font("Helvetica", "B", 20)
         self.set_text_color(*NAVY)
-        self.multi_cell(0, 9, text=latin1(company), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
+        self.multi_cell(0, 9, text=pdf_text(company), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
         self.set_font("Helvetica", "", 9.5)
         self.set_text_color(*MUTED)
-        self.multi_cell(0, 5, text=latin1(meta_line), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
+        self.multi_cell(0, 5, text=pdf_text(meta_line), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
         self.ln(3)
 
     def sentiment_badge(self, sentiment: str, reasoning: str):
@@ -112,20 +124,20 @@ class Report(FPDF):
         self.set_fill_color(*color)
         self.set_text_color(255, 255, 255)
         self.set_font("Helvetica", "B", 9)
-        self.cell(width, 7, text=latin1(label), align="C", fill=True,
+        self.cell(width, 7, text=pdf_text(label), align="C", fill=True,
                   new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
         self.ln(2)
         self.set_font("Helvetica", "I", 9.5)
         self.set_text_color(*SLATE)
-        self.multi_cell(0, 5, text=latin1(reasoning), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
+        self.multi_cell(0, 5, text=pdf_text(reasoning), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
         self.ln(4)
 
     def section(self, heading: str):
         self.ln(2)
         self.set_font("Helvetica", "B", 8.5)
         self.set_text_color(*ACCENT)
-        self.cell(0, 5, text=latin1(heading.upper()), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.cell(0, 5, text=pdf_text(heading.upper()), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_draw_color(*RULE)
         self.line(self.l_margin, self.get_y(), 210 - self.r_margin, self.get_y())
         self.ln(2)
@@ -133,7 +145,7 @@ class Report(FPDF):
     def body(self, text: str):
         self.set_font("Helvetica", "", 10)
         self.set_text_color(*INK)
-        self.multi_cell(0, 5.4, text=latin1(text), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
+        self.multi_cell(0, 5.4, text=pdf_text(text), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
         self.ln(1)
 
     def bullets(self, items: list[str]):
@@ -146,7 +158,7 @@ class Report(FPDF):
             self.cell(6, 5.4, text=f"{index}.")
             self.set_font("Helvetica", "", 10)
             self.set_text_color(*INK)
-            self.multi_cell(0, 5.4, text=latin1(item), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
+            self.multi_cell(0, 5.4, text=pdf_text(item), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
             self.ln(0.5)
         self.ln(1)
 
@@ -156,12 +168,12 @@ class Report(FPDF):
             self.set_x(self.l_margin + 4)
             self.set_font("Helvetica", "I", 10)
             self.set_text_color(*SLATE)
-            self.multi_cell(0, 5.4, text=latin1(f'"{item.get("quote", "")}"'),
+            self.multi_cell(0, 5.4, text=pdf_text("\u201c" + item.get("quote", "") + "\u201d"),
                             new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
             self.set_x(self.l_margin + 4)
             self.set_font("Helvetica", "B", 8.5)
             self.set_text_color(*MUTED)
-            self.multi_cell(0, 5, text=latin1(f'- {item.get("speaker", "Unattributed")}'),
+            self.multi_cell(0, 5, text=pdf_text(f'- {item.get("speaker", "Unattributed")}'),
                             new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
 
             self.set_draw_color(*ACCENT)
@@ -224,13 +236,13 @@ def build_comparison_pdf(payload: dict[str, Any]) -> bytes:
 
     pdf.title_block(
         later.get("company_name", earlier.get("company_name", "Unknown issuer")),
-        f"{earlier.get('reporting_period', 'Earlier period')}  to  "
+        f"{earlier.get('reporting_period', 'Earlier period')}  \u2192  "
         f"{later.get('reporting_period', 'Later period')}",
     )
 
     pdf.set_font("Helvetica", "B", 12)
     pdf.set_text_color(*NAVY)
-    pdf.multi_cell(0, 6, text=latin1(comparison.get("headline", "")),
+    pdf.multi_cell(0, 6, text=pdf_text(comparison.get("headline", "")),
                    new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
     pdf.ln(2)
     pdf.sentiment_badge(
@@ -247,7 +259,7 @@ def build_comparison_pdf(payload: dict[str, Any]) -> bytes:
     pdf.set_fill_color(*NAVY)
     pdf.set_text_color(255, 255, 255)
     for width, header in zip(col_widths, headers, strict=True):
-        pdf.cell(width, 7, text=latin1(header)[:28], border=0, fill=True)
+        pdf.cell(width, 7, text=pdf_text(header)[:28], border=0, fill=True)
     pdf.ln(7)
 
     pdf.set_text_color(*INK)
@@ -258,12 +270,12 @@ def build_comparison_pdf(payload: dict[str, Any]) -> bytes:
             delta.get("later", ""),
             delta.get("direction", "").upper(),
         )
-        commentary = latin1(delta.get("commentary", ""))
+        commentary = pdf_text(delta.get("commentary", ""))
 
         # Row height is driven by the tallest wrapped column, plus the commentary line.
         pdf.set_font("Helvetica", "", 8.5)
         line_counts = [
-            len(pdf.multi_cell(width, 4.5, text=latin1(value), dry_run=True, output="LINES", align="L"))
+            len(pdf.multi_cell(width, 4.5, text=pdf_text(value), dry_run=True, output="LINES", align="L"))
             for width, value in zip(col_widths, cells, strict=True)
         ]
         pdf.set_font("Helvetica", "I", 8)
@@ -288,7 +300,7 @@ def build_comparison_pdf(payload: dict[str, Any]) -> bytes:
                 pdf.set_text_color(*{"up": BULLISH, "down": BEARISH}.get(direction, MUTED))
             else:
                 pdf.set_text_color(*INK)
-            pdf.multi_cell(width, 4.5, text=latin1(value), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
+            pdf.multi_cell(width, 4.5, text=pdf_text(value), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
             left += width
 
         if commentary:
@@ -324,4 +336,271 @@ def build_comparison_pdf(payload: dict[str, Any]) -> bytes:
     pdf.section("What to watch next quarter")
     pdf.bullets(comparison.get("what_to_watch", []))
 
+    return bytes(pdf.output())
+
+
+# --------------------------------------------------------------------------
+# Investment memo
+#
+# Laid out as a research note rather than a web page: a strict two-column grid
+# with section labels in the left gutter, serif body, hairline rules, and
+# colour reserved for one marker. Everything is positioned explicitly.
+#
+# The page must hold one page. Rather than hope the content fits, the memo is
+# rendered at progressively tighter settings until it does (FIT_STEPS), which
+# keeps the typography honest instead of letting a long quarter overflow.
+# --------------------------------------------------------------------------
+
+PAGE_W = 210.0
+PAGE_H = 297.0
+MARGIN_L = 18.0
+MARGIN_R = 18.0
+CONTENT_R = PAGE_W - MARGIN_R          # 192
+COLUMN_X = MARGIN_L + 30.0             # 48: where body text starts
+COLUMN_W = CONTENT_R - COLUMN_X        # 144
+HALF_GAP = 10.0
+HALF_W = (COLUMN_W - HALF_GAP) / 2     # 67
+FOOTER_Y = PAGE_H - 18.0
+
+HAIRLINE = (214, 221, 229)
+
+SERIF = "Times"
+SANS = "Helvetica"
+
+# (type scale, quotes shown) tried in order until the memo fits one page.
+FIT_STEPS = ((1.0, 2), (0.96, 2), (0.92, 2), (0.88, 2), (0.88, 1), (0.84, 1))
+
+
+class Memo(FPDF):
+    """One-page investment memo, laid out on a fixed grid."""
+
+    def __init__(self, scale: float = 1.0) -> None:
+        super().__init__(orientation="P", unit="mm", format="A4")
+        self.scale = scale
+        self.core_fonts_encoding = "windows-1252"
+        # Overflow must be measurable, so nothing is allowed to break to page 2.
+        self.set_auto_page_break(auto=False)
+        self.set_margins(MARGIN_L, 14, MARGIN_R)
+        self.set_line_width(0.2)
+
+    def pt(self, size: float) -> float:
+        return size * self.scale
+
+    # -- primitives --------------------------------------------------------
+
+    def rule(self, y: float, x0: float = MARGIN_L, x1: float = CONTENT_R,
+             weight: float = 0.2, color: tuple[int, int, int] = HAIRLINE) -> None:
+        self.set_draw_color(*color)
+        self.set_line_width(weight)
+        self.line(x0, y, x1, y)
+        self.set_line_width(0.2)
+
+    def tracked(self, x: float, y: float, text: str, size: float = 6.8,
+                color: tuple[int, int, int] = MUTED, style: str = "B",
+                spacing: float = 0.8, align: str = "L") -> None:
+        """A small letterspaced label: every piece of UI-like text on the page."""
+        self.set_font(SANS, style, self.pt(size))
+        self.set_text_color(*color)
+        self.set_char_spacing(spacing)
+        width = self.get_string_width(text)
+        self.set_xy(CONTENT_R - width if align == "R" else x, y)
+        self.cell(width + 1, 3, text=pdf_text(text))
+        self.set_char_spacing(0)
+
+    def flow(self, x: float, y: float, w: float, text: str, *, family: str = SERIF,
+             style: str = "", size: float = 9.6, leading: float = 4.5,
+             color: tuple[int, int, int] = INK) -> float:
+        """Lay out wrapped text; return the y just below it."""
+        if not text:
+            return y
+        self.set_font(family, style, self.pt(size))
+        self.set_text_color(*color)
+        self.set_xy(x, y)
+        self.multi_cell(w, leading * self.scale, text=pdf_text(text), align="L",
+                        new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        return self.get_y()
+
+    def height_of(self, w: float, text: str, *, family: str = SERIF, style: str = "",
+                  size: float = 9.6, leading: float = 4.5) -> float:
+        if not text:
+            return 0.0
+        self.set_font(family, style, self.pt(size))
+        lines = self.multi_cell(w, leading * self.scale, text=pdf_text(text), dry_run=True,
+                                output="LINES", align="L")
+        return len(lines) * leading * self.scale
+
+    def section(self, y: float, label: str) -> float:
+        """Rule across the measure, label in the gutter, body starting at y."""
+        self.rule(y - 3.4)
+        self.tracked(MARGIN_L, y - 1.2, label.upper(), 6.8, NAVY)
+        return y
+
+    def footer_block(self) -> None:
+        self.rule(FOOTER_Y)
+        self.set_font(SANS, "", 6.4)
+        self.set_text_color(*MUTED)
+        self.set_char_spacing(0.3)
+        self.set_xy(MARGIN_L, FOOTER_Y + 2)
+        self.cell(140, 4, text=pdf_text(
+            "Drafted by Rival Edge from company disclosure. No valuation, consensus or "
+            "peer data. Not investment advice."))
+        self.set_char_spacing(0)
+
+
+def _masthead(pdf: Memo, memo: dict[str, Any]) -> float:
+    pdf.tracked(MARGIN_L, 14, "RIVAL EDGE", 7.4, NAVY, "B", 1.6)
+    pdf.tracked(0, 14, datetime.now().strftime("%d %B %Y").upper(), 6.6, MUTED, "", 1.0, "R")
+    pdf.rule(19.5, weight=0.5, color=NAVY)
+
+    y = 27.0
+    pdf.set_font(SERIF, "B", pdf.pt(21))
+    pdf.set_text_color(*NAVY)
+    pdf.set_xy(MARGIN_L, y - 7)
+    pdf.cell(CONTENT_R - MARGIN_L - 32, 9, text=pdf_text(memo.get("company_name", "Company")))
+
+    read = memo.get("disclosure_read", "Neutral")
+    color = BADGE_COLORS.get(read, NEUTRAL)
+    pdf.set_fill_color(*color)
+    pdf.rect(CONTENT_R - 23.5, y - 4.4, 2.4, 2.4, style="F")
+    pdf.tracked(0, y - 4.8, read.upper(), 7.0, color, "B", 1.1, "R")
+
+    pdf.tracked(MARGIN_L, y + 3.2, "INVESTMENT MEMO  ·  " + memo.get("basis", ""), 6.8, MUTED, "", 0.9)
+
+    # The one-line read sits with the header rather than as its own section.
+    y = pdf.flow(MARGIN_L, y + 8.5, CONTENT_R - MARGIN_L, memo.get("disclosure_reason", ""),
+                 style="I", size=9.0, leading=4.3, color=SLATE)
+    return y + 4.0
+
+
+def _figures(pdf: Memo, figures: list[dict[str, str]], y: float) -> float:
+    if not figures:
+        return y
+    pdf.rule(y, weight=0.5, color=NAVY)
+    width = (CONTENT_R - MARGIN_L) / len(figures)
+    block = 22.0 * pdf.scale
+
+    for index, figure in enumerate(figures):
+        x = MARGIN_L + index * width
+        if index:
+            pdf.set_draw_color(*HAIRLINE)
+            pdf.line(x - 3, y + 3, x - 3, y + block - 3)
+
+        pdf.tracked(x, y + 4.5 * pdf.scale, figure.get("label", "")[:26].upper(), 6.2, MUTED, "B", 0.7)
+        pdf.set_font(SERIF, "B", pdf.pt(14.5))
+        pdf.set_text_color(*NAVY)
+        pdf.set_xy(x, y + 8.4 * pdf.scale)
+        pdf.cell(width - 4, 6, text=pdf_text(figure.get("value", "")))
+
+        change = figure.get("change", "")
+        if change:
+            # Not colour-coded on purpose: a rising operating ratio is bad news,
+            # so green-for-up would mislead on half of these metrics.
+            pdf.set_font(SANS, "", pdf.pt(7.2))
+            pdf.set_text_color(*MUTED)
+            pdf.set_xy(x, y + 15 * pdf.scale)
+            pdf.multi_cell(width - 5, 3.2, text=pdf_text(change), align="L",
+                           new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+    pdf.rule(y + block)
+    return y + block + 7.0
+
+
+def _case_column(pdf: Memo, x: float, y: float, title: str, items: list[dict[str, str]],
+                 accent: tuple[int, int, int]) -> float:
+    pdf.tracked(x, y, title.upper(), 6.8, accent, "B", 0.8)
+    cursor = y + 5.5 * pdf.scale
+
+    for index, item in enumerate(items, start=1):
+        pdf.set_font(SANS, "B", pdf.pt(8.4))
+        pdf.set_text_color(*MUTED)
+        pdf.set_xy(x, cursor)
+        pdf.cell(4, 4, text=str(index))
+
+        cursor = pdf.flow(x + 4.5, cursor, HALF_W - 4.5, item.get("claim", ""),
+                          family=SANS, style="B", size=8.4, leading=3.9, color=INK)
+        cursor = pdf.flow(x + 4.5, cursor + 0.5, HALF_W - 4.5, item.get("evidence", ""),
+                          size=8.4, leading=3.8, color=SLATE) + 3.0
+
+    return cursor
+
+
+def _catalysts(pdf: Memo, y: float, catalysts: list[dict[str, str]]) -> float:
+    cursor = y
+    for catalyst in catalysts:
+        timing = pdf_text(catalyst.get("timing", ""))
+        pdf.set_font(SANS, "", pdf.pt(7.4))
+        timing_w = pdf.get_string_width(timing) + 2
+        event_w = COLUMN_W - timing_w - 6
+
+        height = pdf.height_of(event_w, catalyst.get("event", ""), size=9.0, leading=4.0)
+        pdf.flow(COLUMN_X, cursor, event_w, catalyst.get("event", ""), size=9.0, leading=4.0)
+
+        pdf.set_font(SANS, "", pdf.pt(7.4))
+        pdf.set_text_color(*MUTED)
+        pdf.set_xy(CONTENT_R - timing_w, cursor + 0.7)
+        pdf.cell(timing_w, 3.4, text=timing, align="R")
+
+        cursor += max(height, 4.0) + 2.0
+        if catalyst is not catalysts[-1]:
+            pdf.rule(cursor - 1.0, x0=COLUMN_X)
+    return cursor
+
+
+def _render_memo(memo: dict[str, Any], scale: float, quote_limit: int) -> tuple[Memo, float]:
+    pdf = Memo(scale)
+    pdf.add_page()
+
+    y = _masthead(pdf, memo)
+    y = _figures(pdf, memo.get("key_figures", []), y)
+
+    y = pdf.section(y, "Situation")
+    y = pdf.flow(COLUMN_X, y, COLUMN_W, memo.get("situation", ""), size=9.6, leading=4.6) + 6.5
+
+    y = pdf.section(y, "The two cases")
+    bull = _case_column(pdf, COLUMN_X, y, "Bull", memo.get("bull_case", []), BULLISH)
+    bear = _case_column(pdf, COLUMN_X + HALF_W + HALF_GAP, y, "Bear",
+                        memo.get("bear_case", []), BEARISH)
+    divider = COLUMN_X + HALF_W + HALF_GAP / 2
+    pdf.set_draw_color(*HAIRLINE)
+    pdf.line(divider, y, divider, max(bull, bear) - 3)
+    y = max(bull, bear) + 3.5
+
+    y = pdf.section(y, "Catalysts")
+    y = _catalysts(pdf, y, memo.get("catalysts", [])) + 4.5
+
+    y = pdf.section(y, "Still to answer")
+    for index, question in enumerate(memo.get("open_questions", []), start=1):
+        pdf.set_font(SANS, "B", pdf.pt(8.0))
+        pdf.set_text_color(*MUTED)
+        pdf.set_xy(COLUMN_X, y + 0.3)
+        pdf.cell(4.5, 4, text=str(index))
+        y = pdf.flow(COLUMN_X + 4.5, y, COLUMN_W - 4.5, question, size=8.8,
+                     leading=4.0, color=SLATE) + 1.6
+    y += 3.5
+
+    quotes = memo.get("quotes", [])[:quote_limit]
+    if quotes:
+        y = pdf.section(y, "In their words")
+        for quote in quotes:
+            start = y
+            y = pdf.flow(COLUMN_X + 4.5, y, COLUMN_W - 4.5, "\u201c" + quote.get("quote", "") + "\u201d",
+                         style="I", size=9.0, leading=4.2)
+            pdf.tracked(COLUMN_X + 4.5, y + 0.6, quote.get("speaker", "").upper(), 6.4, MUTED, "B", 0.8)
+            pdf.set_draw_color(*NAVY)
+            pdf.set_line_width(0.5)
+            pdf.line(COLUMN_X, start + 0.6, COLUMN_X, y + 2.6)
+            pdf.set_line_width(0.2)
+            y += 7.0
+
+    pdf.footer_block()
+    return pdf, y
+
+
+def build_memo_pdf(memo: dict[str, Any]) -> bytes:
+    """Render the memo at the largest setting that still fits one page."""
+    pdf = None
+    for scale, quotes in FIT_STEPS:
+        pdf, bottom = _render_memo(memo, scale, quotes)
+        if bottom < FOOTER_Y - 3:
+            break
     return bytes(pdf.output())

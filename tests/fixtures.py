@@ -85,3 +85,55 @@ def comparison_payload() -> dict:
     later = copy.deepcopy(ANALYSIS)
     later.update(reporting_period="Q3 FY2025", sentiment="Bearish")
     return {"earlier": analysis(), "later": later, "comparison": copy.deepcopy(COMPARISON)}
+
+
+MEMO = {
+    "company_name": "Testco Freight, Inc.",
+    "basis": "Q3 FY2025 earnings call",
+    "situation": "Testco cut full-year guidance one quarter after raising it, as tonnage "
+    "fell 4.3% and the operating ratio worsened 140 basis points to 89.8%.",
+    "key_figures": [
+        {"label": "Revenue", "value": "$1.39B", "change": "+0.7% YoY", "direction": "up"},
+        {"label": "Adjusted EPS", "value": "$1.71", "change": "-4.5% YoY", "direction": "down"},
+        {"label": "Operating ratio", "value": "89.8%", "change": "+140 bps YoY", "direction": "up"},
+        {"label": "Tonnage per day", "value": "-4.3%", "change": "Sept -5.6%", "direction": "down"},
+    ],
+    "bull_case": [
+        {"claim": "Pricing held at 5.1% ex-fuel yield", "evidence": "Whitfield said revenue per "
+         "hundredweight excluding fuel rose 5.1% even after walking away from $40M of revenue."},
+        {"claim": "Last-mile turned profitable", "evidence": "Last-mile revenue was $204M, up 19%, "
+         "at a 0.4% operating margin, the segment's first profitable quarter."},
+        {"claim": "Capital spending flexed down fast", "evidence": "Capex cut to $360M from $410M "
+         "and buybacks moderated to $20M, with net leverage at 1.4x."},
+    ],
+    "bear_case": [
+        {"claim": "Guidance cut one quarter after a raise", "evidence": "Full-year revenue fell to "
+         "$5.55-5.65B from $5.75-5.85B, and the CEO said the guide was too optimistic on volume."},
+        {"claim": "FY2026 margin target withdrawn", "evidence": "Management declined to reaffirm "
+         "the mid-87s operating ratio target and deferred guidance to January."},
+        {"claim": "Wages run above guided yield", "evidence": "Wage inflation near 6% against yield "
+         "guided to roughly 4.5% is a structural gap that volume declines make worse."},
+    ],
+    "catalysts": [
+        {"event": "FY2026 guidance and any operating ratio target", "timing": "January"},
+        {"event": "Q4 results: tonnage guided down 4% to 6%", "timing": "Q4 FY2025"},
+        {"event": "San Antonio terminal opening after deferral", "timing": "Fiscal 2026"},
+    ],
+    "open_questions": [
+        "Where does the new EPS range sit versus consensus after the cut?",
+        "How does the 89.8% operating ratio compare with peers this quarter?",
+        "What happens to margin if competitors keep discounting?",
+    ],
+    "quotes": [
+        {"speaker": "Dana Whitfield, CEO", "quote": "The softness in industrial demand that we "
+         "flagged in July did not stabilize. It deepened."},
+        {"speaker": "Marcus Lee, CFO", "quote": "Density is exactly what a volume decline takes away."},
+    ],
+    "disclosure_read": "Bearish",
+    "disclosure_reason": "Guidance was cut, the FY2026 target was withdrawn, and management "
+    "declined to call a bottom.",
+}
+
+
+def memo() -> dict:
+    return copy.deepcopy(MEMO)

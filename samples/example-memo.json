@@ -1,0 +1,101 @@
+{
+  "company_name": "Northwind Logistics, Inc.",
+  "basis": "Q3 FY2025 earnings call transcript, October 23, 2025 (fictional sample document)",
+  "situation": "Northwind cut FY guidance 90 days after raising it. Tonnage per day fell 4.3% with September at -5.6% and October tracking in line. Operating ratio worsened 140 bps to 89.8%. Management declined to reaffirm the FY2026 mid-87s OR target and will not call a bottom.",
+  "key_figures": [
+    {
+      "label": "Revenue",
+      "value": "$1.39B",
+      "change": "+0.7% YoY",
+      "direction": "up"
+    },
+    {
+      "label": "Adjusted EPS",
+      "value": "$1.71",
+      "change": "-4.5% YoY",
+      "direction": "down"
+    },
+    {
+      "label": "Operating ratio",
+      "value": "89.8%",
+      "change": "+140 bps YoY",
+      "direction": "down"
+    },
+    {
+      "label": "Tonnage per day",
+      "value": "-4.3%",
+      "change": "Sept -5.6%",
+      "direction": "down"
+    }
+  ],
+  "bull_case": [
+    {
+      "claim": "Pricing held at 5.1% ex-fuel yield despite competitor discounting",
+      "evidence": "Whitfield: 'Our pricing held. Revenue per hundredweight, excluding fuel surcharge, increased 5.1%,' even after walking away from ~$40M of annualized revenue."
+    },
+    {
+      "claim": "Last-mile turned profitable for the first time ever",
+      "evidence": "Last-mile revenue $204M, +19% YoY, at 0.4% operating margin; Whitfield said 'nothing one-time in it,' driven by insourcing off purchased transportation."
+    },
+    {
+      "claim": "Balance sheet and capex flexed down fast",
+      "evidence": "FY capex cut to $360M from $410M, San Antonio deferred, buybacks moderated to $20M, FCF $88M, net leverage 1.4x adjusted EBITDA."
+    }
+  ],
+  "bear_case": [
+    {
+      "claim": "Guidance cut hard one quarter after a raise",
+      "evidence": "FY revenue to $5.55–$5.65B from $5.75–$5.85B; adjusted EPS to $6.60–$6.85 from $7.10–$7.40. Whitfield: 'I own that the guidance was too optimistic on volume.'"
+    },
+    {
+      "claim": "FY2026 mid-87s operating ratio target withdrawn",
+      "evidence": "Lee said it is not 'appropriate to reaffirm that target today'; FY2026 guidance deferred to January amid uncertainty on industrial recovery timing."
+    },
+    {
+      "claim": "Wages at ~6% run above yield guided to ~4.5%",
+      "evidence": "Lee called the wage-yield gap 'a structural headwind that doesn't depend on the cycle,' requiring density gains while Q4 tonnage is guided down 4–6%."
+    }
+  ],
+  "catalysts": [
+    {
+      "event": "FY2026 guidance and OR target update",
+      "timing": "January"
+    },
+    {
+      "event": "Q4 results: tonnage -4% to -6%, yield ~4.5%",
+      "timing": "Q4 FY2025"
+    },
+    {
+      "event": "San Antonio terminal opening after deferral",
+      "timing": "Fiscal 2026"
+    }
+  ],
+  "open_questions": [
+    "Where do the new FY EPS range of $6.60–$6.85 and the lowered revenue range sit versus current consensus after the cut?",
+    "How does Northwind's -4.3% tonnage and 89.8% operating ratio compare with LTL peers reporting the same quarter?",
+    "What is the revenue and margin impact if competitors keep discounting and Northwind loses more than the $40M of annualized revenue it walked away from?"
+  ],
+  "quotes": [
+    {
+      "speaker": "Dana Whitfield, CEO",
+      "quote": "The softness in industrial demand that we flagged in July did not stabilize. It deepened."
+    },
+    {
+      "speaker": "Marcus Lee, CFO",
+      "quote": "If yield settles in the mid-4s and wages stay near 6%, we need productivity and density gains to close that gap, and density is exactly what a volume decline takes away."
+    }
+  ],
+  "disclosure_read": "Bearish",
+  "disclosure_reason": "Management cut revenue and EPS guidance, pulled the FY2026 operating ratio target, and refused to call a bottom with October tracking at September's -5.6%, while the positives — last-mile profitability, 5.1% yield, Laredo — are too small to offset core network deterioration.",
+  "_meta": {
+    "usage": {
+      "calls": 1,
+      "input_tokens": 7124,
+      "output_tokens": 1457,
+      "models": [
+        "claude-opus-5"
+      ],
+      "elapsed_seconds": 17.8
+    }
+  }
+}
