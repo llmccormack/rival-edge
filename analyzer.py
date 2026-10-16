@@ -156,17 +156,71 @@ ANALYSIS_SCHEMA: dict[str, Any] = {
             "type": "string",
             "description": "earnings call, 10-K, or the closest accurate label",
         },
-        "reporting_period": {
+        "fiscal_period": {
             "type": "string",
-            "description": "e.g. 'Q3 FY2025' or 'FY2024'. 'Not stated' if absent.",
+            "description": "As the company labels it, e.g. 'Q3 FY2025'. 'Not stated' if absent.",
+        },
+        "calendar_period": {
+            "type": "string",
+            "description": (
+                "The months the fiscal period covers, e.g. 'Jul-Sep 2025'. Fiscal years "
+                "differ by company, so this removes the ambiguity. 'Not stated' if the "
+                "document does not make it derivable."
+            ),
         },
         "company_overview": {
             "type": "string",
             "description": "1-2 sentences on what the company does.",
         },
+        "financial_summary": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "metric": {"type": "string", "description": "e.g. 'Revenue', 'Adjusted EPS'."},
+                    "current": {"type": "string", "description": "This period, as reported."},
+                    "prior": {"type": "string", "description": "Same period last year, or 'Not disclosed'."},
+                    "change": {"type": "string", "description": "e.g. '+0.7%', '(4.5)%', '+140 bps'."},
+                },
+                "required": ["metric", "current", "prior", "change"],
+                "additionalProperties": False,
+            },
+            "description": (
+                "4 to 6 rows of the headline financials a PM scans first: revenue, "
+                "earnings, margin or operating ratio, and the operating driver that "
+                "matters for this business. Reported figures only. Where only a change "
+                "is disclosed and no level, put it in change and write 'Not disclosed' "
+                "for current and prior rather than repeating it across columns."
+            ),
+        },
         "revenue_performance": {"type": "string"},
         "yoy_growth": {"type": "string"},
         "management_guidance": {"type": "string"},
+        "guidance_bridge": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "metric": {"type": "string", "description": "e.g. 'FY2025 revenue'."},
+                    "prior": {"type": "string", "description": "The previous guide, or 'No prior guide'."},
+                    "current": {"type": "string", "description": "The guide as it now stands, or 'Withdrawn'."},
+                    "change": {
+                        "type": "string",
+                        "description": (
+                            "The move at the midpoint, in the figure's own units and as a "
+                            "percentage where both ends are given, e.g. '-$200M at midpoint, "
+                            "(3.5)%'. Compute it; do not restate the ranges."
+                        ),
+                    },
+                },
+                "required": ["metric", "prior", "current", "change"],
+                "additionalProperties": False,
+            },
+            "description": (
+                "Every forward number management changed, raised, cut, reaffirmed or "
+                "withdrew. Up to 5 rows. Empty only if the document gives no guidance."
+            ),
+        },
         "top_risks": _string_list("Exactly 3, most material first."),
         "top_opportunities": _string_list("Exactly 3, most material first."),
         "key_quotes": {
@@ -176,29 +230,40 @@ ANALYSIS_SCHEMA: dict[str, Any] = {
                 "properties": {
                     "speaker": {"type": "string"},
                     "quote": {"type": "string"},
+                    "context": {
+                        "type": "string",
+                        "enum": ["Prepared remarks", "Q&A", "Filing text"],
+                        "description": (
+                            "Where it was said. Q&A answers are unscripted and carry more "
+                            "weight than prepared remarks; get this right."
+                        ),
+                    },
                 },
-                "required": ["speaker", "quote"],
+                "required": ["speaker", "quote", "context"],
                 "additionalProperties": False,
             },
-            "description": "Exactly 3 verbatim quotes.",
+            "description": "Exactly 3 verbatim quotes. Prefer Q&A over prepared remarks.",
         },
-        "sentiment": {"type": "string", "enum": ["Bullish", "Neutral", "Bearish"]},
-        "sentiment_reasoning": {"type": "string"},
+        "disclosure_read": {"type": "string", "enum": ["Bullish", "Neutral", "Bearish"]},
+        "disclosure_reason": {"type": "string"},
         "analyst_summary": {"type": "string"},
     },
     "required": [
         "company_name",
         "document_type",
-        "reporting_period",
+        "fiscal_period",
+        "calendar_period",
         "company_overview",
+        "financial_summary",
         "revenue_performance",
         "yoy_growth",
         "management_guidance",
+        "guidance_bridge",
         "top_risks",
         "top_opportunities",
         "key_quotes",
-        "sentiment",
-        "sentiment_reasoning",
+        "disclosure_read",
+        "disclosure_reason",
         "analyst_summary",
     ],
     "additionalProperties": False,
@@ -215,7 +280,13 @@ COMPARISON_SCHEMA: dict[str, Any] = {
             "type": "string",
             "enum": ["Improving", "Stable", "Deteriorating", "Mixed"],
         },
-        "sentiment_shift": {"type": "string"},
+        "disclosure_shift": {
+            "type": "string",
+            "description": (
+                "How the tone of what management disclosed moved between the periods, "
+                "with evidence. Not a view on the shares."
+            ),
+        },
         "deltas": {
             "type": "array",
             "items": {
@@ -244,7 +315,7 @@ COMPARISON_SCHEMA: dict[str, Any] = {
     "required": [
         "headline",
         "trajectory",
-        "sentiment_shift",
+        "disclosure_shift",
         "deltas",
         "new_risks",
         "resolved_risks",
@@ -278,10 +349,14 @@ MEMO_SCHEMA: dict[str, Any] = {
                 "properties": {
                     "label": {"type": "string", "description": "Short metric name, under 24 characters."},
                     "value": {"type": "string", "description": "The figure itself, under 16 characters."},
+                    "period": {
+                        "type": "string",
+                        "description": "Which period this figure is, e.g. '3Q FY25'. Under 12 characters.",
+                    },
                     "change": {"type": "string", "description": "Change versus prior period, or empty."},
                     "direction": {"type": "string", "enum": ["up", "down", "flat", "none"]},
                 },
-                "required": ["label", "value", "change", "direction"],
+                "required": ["label", "value", "period", "change", "direction"],
                 "additionalProperties": False,
             },
             "description": "Exactly 4 figures a portfolio manager would want on one line.",
@@ -296,8 +371,16 @@ MEMO_SCHEMA: dict[str, Any] = {
                         "type": "string",
                         "description": "One sentence citing the document, under 170 characters.",
                     },
+                    "implication": {
+                        "type": "string",
+                        "description": (
+                            "What it does to earnings power or the margin structure if it "
+                            "holds, under 120 characters. The argument, not the fact. No "
+                            "share-price or valuation claim."
+                        ),
+                    },
                 },
-                "required": ["claim", "evidence"],
+                "required": ["claim", "evidence", "implication"],
                 "additionalProperties": False,
             },
             "description": "Exactly 3, strongest first.",
@@ -312,8 +395,16 @@ MEMO_SCHEMA: dict[str, Any] = {
                         "type": "string",
                         "description": "One sentence citing the document, under 170 characters.",
                     },
+                    "implication": {
+                        "type": "string",
+                        "description": (
+                            "What it does to earnings power or the margin structure if it "
+                            "holds, under 120 characters. The argument, not the fact. No "
+                            "share-price or valuation claim."
+                        ),
+                    },
                 },
-                "required": ["claim", "evidence"],
+                "required": ["claim", "evidence", "implication"],
                 "additionalProperties": False,
             },
             "description": "Exactly 3, strongest first.",
@@ -346,12 +437,18 @@ MEMO_SCHEMA: dict[str, Any] = {
                 "properties": {
                     "speaker": {"type": "string"},
                     "quote": {"type": "string", "description": "Verbatim, under 165 characters."},
+                    "context": {"type": "string", "enum": ["Prepared remarks", "Q&A", "Filing text"]},
                 },
-                "required": ["speaker", "quote"],
+                "required": ["speaker", "quote", "context"],
                 "additionalProperties": False,
             },
-            "description": "Exactly 2 quotes worth citing aloud in a pitch.",
+            "description": "Exactly 2 quotes worth citing aloud in a pitch. Prefer Q&A.",
         },
+        "what_would_change_the_read": _string_list(
+            "Exactly 2 falsifiers: the specific, observable things that would overturn "
+            "the read above. Name the metric and the threshold where the document "
+            "supports one, e.g. 'tonnage back above flat by the January guide'."
+        ),
         "disclosure_read": {"type": "string", "enum": ["Bullish", "Neutral", "Bearish"]},
         "disclosure_reason": {"type": "string", "description": "One sentence."},
     },
@@ -365,6 +462,7 @@ MEMO_SCHEMA: dict[str, Any] = {
         "catalysts",
         "open_questions",
         "quotes",
+        "what_would_change_the_read",
         "disclosure_read",
         "disclosure_reason",
     ],
@@ -376,6 +474,9 @@ MEMO_SCHEMA: dict[str, Any] = {
 # respects the descriptions, but not always (a comparison once came back with
 # 7 deltas), so results are trimmed to these after parsing.
 LIST_LIMITS: dict[str, int] = {
+    "financial_summary": 6,
+    "guidance_bridge": 5,
+    "what_would_change_the_read": 2,
     "key_figures": 4,
     "bull_case": 3,
     "bear_case": 3,
@@ -403,26 +504,30 @@ def enforce_list_limits(result: dict[str, Any]) -> dict[str, Any]:
 # Prompts
 # --------------------------------------------------------------------------
 
-ANALYSIS_SYSTEM = """You are a senior equity research analyst. Analyze the \
-financial document you are given and return a JSON object with these exact fields:
-- company_name
-- document_type (earnings call or 10-K)
-- reporting_period
-- company_overview (1-2 sentences on what the company does)
-- revenue_performance (string summary with numbers)
-- yoy_growth (string)
-- management_guidance (string)
-- top_risks (array of 3 strings)
-- top_opportunities (array of 3 strings)
-- key_quotes (array of 3 objects with speaker and quote fields)
-- sentiment (Bullish, Neutral, or Bearish)
-- sentiment_reasoning (1-2 sentences)
-- analyst_summary (3-4 sentence overall summary written like an analyst note)
+ANALYSIS_SYSTEM = """You are a senior equity research analyst writing the note a \
+portfolio manager reads before the stock opens. Analyze the financial document and \
+return the JSON object the schema describes.
+
+What matters most, in order:
+1. The guidance bridge. What forward numbers changed, from what to what, and by how \
+   much at the midpoint. Do the arithmetic for the reader. A withdrawn target is a \
+   change: record it as "Withdrawn".
+2. The reported financials, as a table a reader can scan, not as prose.
+3. What management said under questioning, as opposed to in the script.
 
 Rules:
-- Use only figures that appear in the document. Never estimate or invent a number.
-- If the document does not state something, say "Not disclosed" rather than guessing.
-- key_quotes must be verbatim from the document, attributed to the named speaker.
+- Use only figures that appear in the document. Never estimate, extrapolate or invent.
+  Deriving a midpoint or a percentage change from two stated numbers is arithmetic, \
+  not estimation: do that.
+- If the document does not state something, write "Not disclosed" rather than guessing.
+- Quotes are verbatim and attributed, and the context field must be right: an answer \
+  in the Q&A session is unscripted and carries more weight than prepared remarks.
+- Keep units consistent within a field. Use the company's own convention for the \
+  figure, and write negatives in parentheses, as (4.3)%, the way a note does.
+- State the calendar months behind the fiscal label whenever the document makes them \
+  derivable. Fiscal years differ by company and the reader cannot be expected to know.
+- disclosure_read describes the tone of what management disclosed. It is not a view \
+  on the shares, and you have no price or valuation data, so never imply one.
 - Write for a portfolio manager: specific, quantitative, no filler.
 
 Return only valid JSON, no other text."""
@@ -473,10 +578,17 @@ Rules:
 - The bull and bear cases are what the disclosure itself supports on each side, \
   not a balanced-sounding pair. If the evidence leans one way, say so in the \
   disclosure_read and let the weaker side be thin.
+- A case is an argument, not a list of events. "Last-mile turned profitable" is a \
+  fact; the implication field is where you say what it does to the margin structure \
+  if it holds. Tie every claim to earnings power, never to a share price.
+- what_would_change_the_read are falsifiers a reader can actually watch for: a \
+  metric and a level, taken from what the company disclosed or guided.
 - open_questions are the things this document cannot settle and the analyst must \
   check elsewhere: valuation, consensus, peer comparison, market share. Make them \
   specific to this company, not generic research advice.
-- Quotes are verbatim and attributed.
+- Quotes are verbatim and attributed, and the context field must be right: an \
+  unscripted Q&A answer carries more weight than prepared remarks, so prefer it.
+- Keep units consistent, and write negatives in parentheses, as (4.3)%.
 - Write for someone who will say these words out loud. Short sentences, real \
   numbers, no filler.
 - This is a one-page memo. Respect every length limit in the schema; a long \

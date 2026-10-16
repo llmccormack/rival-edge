@@ -110,3 +110,40 @@ class TestPdfExtraction:
     def test_corrupt_pdf_is_explained(self):
         with pytest.raises(DocumentError, match="could not be read"):
             documents.extract_text_from_pdf(io.BytesIO(b"%PDF-1.4 not really a pdf"))
+
+
+class TestAnalyticalContract:
+    """The fields a reader checks first must be structured, not prose."""
+
+    def test_guidance_is_a_bridge_not_a_paragraph(self):
+        bridge = analyzer.ANALYSIS_SCHEMA["properties"]["guidance_bridge"]
+        columns = bridge["items"]["properties"]
+        assert set(columns) == {"metric", "prior", "current", "change"}
+        assert "midpoint" in columns["change"]["description"]
+
+    def test_reported_financials_are_a_table(self):
+        columns = analyzer.ANALYSIS_SCHEMA["properties"]["financial_summary"]["items"]["properties"]
+        assert set(columns) == {"metric", "current", "prior", "change"}
+
+    def test_period_is_unambiguous(self):
+        properties = analyzer.ANALYSIS_SCHEMA["properties"]
+        assert "fiscal_period" in properties and "calendar_period" in properties
+
+    @pytest.mark.parametrize("schema", [analyzer.ANALYSIS_SCHEMA, analyzer.MEMO_SCHEMA])
+    def test_quotes_record_where_they_were_said(self, schema):
+        key = "key_quotes" if "key_quotes" in schema["properties"] else "quotes"
+        context = schema["properties"][key]["items"]["properties"]["context"]
+        assert context["enum"] == ["Prepared remarks", "Q&A", "Filing text"]
+
+    def test_memo_cases_carry_an_implication(self):
+        for case in ("bull_case", "bear_case"):
+            columns = analyzer.MEMO_SCHEMA["properties"][case]["items"]["properties"]
+            assert "implication" in columns, case
+
+    def test_nothing_claims_to_know_the_price(self):
+        # The tool has no market data; the prompts must not imply a view on the shares.
+        for prompt in (analyzer.ANALYSIS_SYSTEM, analyzer.MEMO_SYSTEM, analyzer.COMPARISON_SYSTEM):
+            assert "price target" not in prompt.lower() or "no valuation" in prompt.lower()
+        assert "no price or valuation data" in analyzer.ANALYSIS_SYSTEM
+        assert "must not imply one" in analyzer.MEMO_SYSTEM
+        assert "No valuation, price target" in analyzer.MEMO_SYSTEM

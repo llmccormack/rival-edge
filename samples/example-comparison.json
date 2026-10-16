@@ -1,39 +1,113 @@
 {
   "earlier": {
     "company_name": "Northwind Logistics, Inc.",
-    "document_type": "earnings call",
-    "reporting_period": "Q2 FY2025",
-    "company_overview": "Northwind Logistics is a freight transportation and logistics operator running a terminal-based line-haul network with a growing last-mile delivery segment serving e-commerce retailers. The company competes on network density and pricing discipline across industrial and consumer freight lanes.",
-    "revenue_performance": "Q2 revenue of $1.42 billion versus $1.31 billion a year ago; excluding fuel surcharge, revenue grew 9.6% as fuel surcharge revenue was roughly flat. Adjusted EPS $1.86 (GAAP EPS $1.79); operating ratio 88.4%, a record Q2, improved 80 bps. Last-mile revenue $186 million with segment operating margin of -1.8% versus -6.1% a year ago. Free cash flow $142 million, capex $98 million, $75 million of buybacks, net leverage 1.2x adjusted EBITDA.",
-    "yoy_growth": "Revenue +8.4% (+9.6% ex-fuel); adjusted EPS +11.4%; last-mile revenue +24%; tonnage per day +3.1% (but June tonnage per day -2% YoY); revenue per hundredweight ex-fuel +5.2%.",
-    "management_guidance": "Full-year FY2025 revenue guidance raised to $5.75-$5.85 billion from $5.65-$5.80 billion; adjusted EPS raised to $7.10-$7.40 from $6.95-$7.30. Assumes tonnage flat to down 2% for the remainder of the year with mid-single-digit yield improvement and back-half contract renewals repricing at high-single-digit increases. Full-year capex maintained at $410 million (two Texas terminals plus ~1,100 tractors). Q3 expected to be 'more measured' with earnings weighted to Q4; management sees a path to a mid-87s operating ratio next year.",
+    "document_type": "earnings call transcript",
+    "fiscal_period": "Q2 FY2025",
+    "calendar_period": "Apr-Jun 2025 (call held July 24, 2025; June cited as final month of quarter)",
+    "company_overview": "Northwind Logistics is a freight transportation and logistics carrier operating an LTL-style terminal network plus a fast-growing last-mile delivery segment serving e-commerce retailers. The company is expanding its footprint with two new Texas terminals targeting cross-border and Central Texas lanes.",
+    "financial_summary": [
+      {
+        "metric": "Revenue",
+        "current": "$1.42B",
+        "prior": "$1.31B",
+        "change": "+8.4% (+9.6% ex-fuel)"
+      },
+      {
+        "metric": "Adjusted EPS",
+        "current": "$1.86",
+        "prior": "$1.67",
+        "change": "+11.4%"
+      },
+      {
+        "metric": "GAAP EPS",
+        "current": "$1.79",
+        "prior": "Not disclosed",
+        "change": "n/a"
+      },
+      {
+        "metric": "Operating ratio",
+        "current": "88.4%",
+        "prior": "89.2%",
+        "change": "(80) bps — best Q2 in company history"
+      },
+      {
+        "metric": "Revenue per cwt ex-fuel / Tonnage per day",
+        "current": "+5.2% yield / +3.1% tonnage",
+        "prior": "Not disclosed",
+        "change": "June tonnage per day (2)% y/y, first negative month since early 2024"
+      },
+      {
+        "metric": "Last-mile revenue / segment margin",
+        "current": "$186M / (1.8)%",
+        "prior": "$150M implied / (6.1)%",
+        "change": "+24% revenue; margin +430 bps"
+      }
+    ],
+    "revenue_performance": "Revenue of $1.42B beat the prior-year $1.31B by 8.4%, with ex-fuel revenue up 9.6% as fuel surcharge revenue was roughly flat (lower diesel offset higher volume). Mix of growth skewed to price: revenue per hundredweight ex-fuel +5.2% versus tonnage per day +3.1%. Last-mile was the growth engine at $186M, +24% y/y on three new e-commerce accounts onboarded in the quarter, with segment margin improving to (1.8)% from (6.1)%. Free cash flow was $142M, capex $98M, $75M of buyback, net leverage 1.2x adjusted EBITDA.",
+    "yoy_growth": "Revenue +8.4% (+9.6% ex-fuel); adjusted EPS +11.4%; operating ratio improved 80 bps to 88.4%; last-mile revenue +24%. Offsetting pressures: driver wages and benefits +6% per hour (ahead of the 5.2% yield gain), higher purchased transportation for last-mile peaks, and top-10 customer concentration rising to 31% of revenue from 27%.",
+    "management_guidance": "Full-year FY2025 revenue guidance raised to $5.75-$5.85B from $5.65-$5.80B, and adjusted EPS raised to $7.10-$7.40 from $6.95-$7.30. The raise is explicitly a yield story: guidance assumes tonnage flat to down 2% for the remainder of the year, consistent with June, with mid-single-digit yield improvement and back-half contract renewals repricing at high-single-digit increases. Full-year capex budget maintained at $410M (two Texas terminals, ~1,100 tractors). Q3 expected to be 'more measured,' with earnings weighted to Q4 as the Texas terminals open late in the quarter (minimal FY2025 contribution; a FY2026 story). Management flagged a path to a mid-87s operating ratio next year, contingent on a stable environment.",
+    "guidance_bridge": [
+      {
+        "metric": "FY2025 revenue",
+        "prior": "$5.65B-$5.80B (mid $5.725B)",
+        "current": "$5.75B-$5.85B (mid $5.80B)",
+        "change": "+$75M at midpoint, +1.3%"
+      },
+      {
+        "metric": "FY2025 adjusted EPS",
+        "prior": "$6.95-$7.30 (mid $7.125)",
+        "current": "$7.10-$7.40 (mid $7.25)",
+        "change": "+$0.125 at midpoint, +1.8%"
+      },
+      {
+        "metric": "FY2025 capital expenditures",
+        "prior": "$410M",
+        "current": "$410M (maintained)",
+        "change": "Unchanged"
+      },
+      {
+        "metric": "2H FY2025 tonnage assumption",
+        "prior": "No prior guide",
+        "current": "Flat to down 2%",
+        "change": "New disclosure; consistent with June actual of (2)%"
+      },
+      {
+        "metric": "Operating ratio, next year",
+        "prior": "No prior guide",
+        "current": "Path to mid-87s (vs 88.4% in Q2)",
+        "change": "New framing; assumes stable environment, does not require volume recovery"
+      }
+    ],
     "top_risks": [
-      "Deteriorating industrial freight demand — June tonnage per day turned negative (-2% YoY), the first negative month since early 2024, and Midwest manufacturing customers are tightening inventories; guidance depends on tonnage holding flat to down 2%.",
-      "Cost/price spread compression — driver wages and benefits up 6% per hour versus 5.2% yield improvement, narrowing incremental margins, with purchased transportation also rising to cover last-mile peaks; the mid-87s OR target requires softness not to deepen.",
-      "Rising customer concentration — top ten customers grew to 31% of revenue from 27%, driven by new last-mile accounts, and may tick up further near term."
+      "Industrial demand deterioration: June tonnage per day turned negative at (2)%, the first down month since early 2024, and Midwest manufacturing customers are destocking. The entire guidance raise rests on price, not volume; management conceded that if tonnage falls materially below the flat-to-down-2% assumption, 'we would have a conversation.'",
+      "Cost/price squeeze: driver wages and benefits are inflating 6% per hour against 5.2% yield, which management itself says narrows incremental margins on pure price. Offsetting density/productivity gains (stops per hour +3%) get harder to hold if volumes soften, putting the mid-87s OR target at risk.",
+      "Customer concentration: top-10 customers rose to 31% of revenue from 27% a year ago on the new last-mile accounts, and may tick up further near term; last-mile is still loss-making at (1.8)% margin and dependent on third-party purchased transportation."
     ],
     "top_opportunities": [
-      "Back-half pricing visibility — contract renewals repricing at high-single-digit increases underpins the raised guidance despite soft volumes.",
-      "Last-mile scaling toward profitability — margin improved from -6.1% to -1.8% with breakeven expected within two to three quarters as new accounts move onto owned capacity.",
-      "Laredo and San Antonio terminals opening in Q4, targeting an estimated $600 million addressable cross-border and Central Texas market, largely a fiscal 2026 earnings contributor."
+      "Back-half contract renewals repricing at high-single-digit increases, underpinning the mid-single-digit yield assumption independent of volume recovery.",
+      "Last-mile crossing breakeven within two to three quarters as onboarding costs roll off and new accounts migrate onto owned capacity from purchased transportation; segment margin already improved 430 bps y/y.",
+      "Laredo and San Antonio terminals opening in Q4, addressing an estimated $600M addressable market in cross-border and Central Texas lanes not served efficiently today; a FY2026 revenue and mix-diversification driver."
     ],
     "key_quotes": [
       {
-        "speaker": "Dana Whitfield",
-        "quote": "Industrial demand is clearly softer than it was ninety days ago, and we are planning the second half accordingly."
+        "speaker": "Dana Whitfield, President and CEO",
+        "quote": "The raise is fundamentally a yield story, not a volume story. We have visibility into contract renewals for the back half, and those are repricing at high-single-digit increases. Our guidance already assumes volumes are flat to down 2%. If tonnage were to fall materially further than that, we would have a conversation.",
+        "context": "Q&A"
       },
       {
-        "speaker": "Marcus Lee",
-        "quote": "I would note that wage inflation of 6% is running ahead of our 5.2% yield improvement, which means incremental margins on pure price are narrowing. We are watching that closely."
+        "speaker": "Marcus Lee, EVP and CFO",
+        "quote": "You're pointing at exactly the right tension, Priya. On a per-unit basis, yes, wage inflation ahead of yield compresses incremental margins. What has offset it so far is density and productivity... If volumes soften, density becomes harder to hold, so we are managing staffing carefully.",
+        "context": "Q&A"
       },
       {
-        "speaker": "Dana Whitfield",
-        "quote": "The raise is fundamentally a yield story, not a volume story."
+        "speaker": "Dana Whitfield, President and CEO",
+        "quote": "We are not following. We've built this network to earn a return, and we'll continue to walk away from freight that doesn't meet our thresholds. That may cost us some tonnage in the short run, and we're comfortable with that trade.",
+        "context": "Q&A"
       }
     ],
-    "sentiment": "Neutral",
-    "sentiment_reasoning": "Management delivered a record Q2 operating ratio and raised both revenue and EPS guidance on visible pricing, but explicitly flagged negative June tonnage, softening industrial demand, wage inflation outpacing yield, and rising customer concentration. The positive earnings revision is offset by a deteriorating volume backdrop and Q3 caution.",
-    "analyst_summary": "Northwind delivered a clean beat-and-raise quarter on price, not volume: revenue +8.4% to $1.42B, adjusted EPS +11.4% to $1.86, and a record Q2 operating ratio of 88.4% (-80 bps), with yield ex-fuel +5.2% more than offsetting 3.1% tonnage growth. Guidance moved up to $5.75-$5.85B revenue and $7.10-$7.40 adjusted EPS, underwritten by high-single-digit back-half contract renewals against an assumption of flat to down 2% tonnage — a plan that already embeds June's -2% tonnage print. The key watch items are the 6% wage inflation running ahead of 5.2% yield (compressing incremental margins if density erodes) and top-ten customer concentration rising to 31% from 27%. With last-mile losses narrowing to -1.8% and breakeven guided within two to three quarters, plus Laredo/San Antonio opening into a stated $600M addressable market, the FY2026 setup is more compelling than the near-term industrial backdrop; we would treat Q3 as the risk quarter given the explicitly Q4-weighted earnings cadence.",
+    "disclosure_read": "Neutral",
+    "disclosure_reason": "The quarter beat on every headline line (revenue +8.4%, adjusted EPS +11.4%, record Q2 OR of 88.4%) and guidance was raised at both ends, but management simultaneously disclosed that industrial demand is 'clearly softer than it was ninety days ago,' June tonnage turned negative, wage inflation of 6% is running ahead of 5.2% yield, and customer concentration jumped 400 bps. The raise is +1.3% on revenue and +1.8% on EPS at the midpoint — modest, entirely price-driven, with Q3 guided 'more measured' and earnings back-end weighted to Q4. Strong print, deteriorating underlying volume signal.",
+    "analyst_summary": "Northwind delivered a clean beat on price, not volume. Revenue $1.42B (+8.4%), adjusted EPS $1.86 (+11.4%), and a record Q2 operating ratio of 88.4% (80 bps better), with yield ex-fuel +5.2% versus tonnage +3.1%. FY2025 guidance went up modestly: revenue to $5.75-5.85B from $5.65-5.80B (+$75M, +1.3% at midpoint) and adjusted EPS to $7.10-7.40 from $6.95-7.30 (+$0.125, +1.8%). The quality of that raise is the debate. Management volunteered that June tonnage was (2)% y/y — the first negative month since early 2024 — and embedded flat-to-down-2% tonnage into the back half, so the entire increase is carried by high-single-digit contract renewal pricing. The CFO was unusually candid under questioning that 6% wage inflation running ahead of 5.2% yield compresses incremental margins, with density and 3% stops-per-hour productivity the only offset, and that the mid-87s OR ambition for FY2026 'does require that the current softness doesn't deepen significantly.' Second-order positives: last-mile at $186M (+24%) with margin improving to (1.8)% from (6.1)% and breakeven guided within two to three quarters, and two Texas terminals opening in Q4 against a stated $600M addressable market — but management explicitly flagged 'very little' FY2025 contribution, making that FY2026 optionality. Watch items: 31% top-10 concentration (up from 27%), Q3 guided 'more measured' with earnings weighted to Q4, and whether regional carrier discounting in the Midwest broadens beyond 'isolated.' Capex held at $410M; $75M repurchased; leverage 1.2x.",
     "_meta": {
       "characters": 10356,
       "estimated_tokens": 2958,
@@ -44,38 +118,112 @@
   "later": {
     "company_name": "Northwind Logistics, Inc.",
     "document_type": "earnings call",
-    "reporting_period": "Q3 FY2025",
-    "company_overview": "Northwind Logistics is a freight transportation and logistics operator running a terminal-based linehaul network with a growing last-mile delivery segment. It competes on yield/pricing discipline across industrial freight lanes, including newly opened cross-border capacity at Laredo.",
-    "revenue_performance": "Q3 revenue of $1.39 billion versus $1.38 billion a year ago (+0.7%); excluding fuel surcharge, revenue grew 1.4%. Adjusted EPS $1.71 (down 4.5% from $1.79); GAAP EPS $1.63, including $9 million of San Antonio construction deferral costs. Operating ratio 89.8%, 140 bps worse YoY. Tonnage per day down 4.3% YoY (September weakest at -5.6%), offset partly by revenue per hundredweight ex-fuel up 5.1%. Last-mile revenue $204 million, +19% YoY, with first-ever positive segment operating margin of 0.4%. Free cash flow $88 million; net leverage 1.4x adjusted EBITDA.",
-    "yoy_growth": "Total revenue +0.7% YoY (+1.4% ex-fuel); adjusted EPS -4.5% YoY; tonnage per day -4.3%; yield (revenue per hundredweight ex-fuel) +5.1%; last-mile revenue +19% (decelerating from +24% in Q2); insurance and claims expense +12%; driver wage inflation ~6% per hour.",
-    "management_guidance": "Full-year revenue guidance lowered to $5.55–$5.65 billion from $5.75–$5.85 billion; full-year adjusted EPS lowered to $6.60–$6.85 from $7.10–$7.40. Q4 assumes tonnage down 4% to 6% with yield improvement of approximately 4.5%. Full-year capex cut to $360 million from $410 million; buybacks moderated to $20 million in the quarter. Management declined to reaffirm the prior fiscal 2026 mid-87s operating ratio target; FY2026 guidance to be provided in January. San Antonio terminal opening deferred to fiscal 2026.",
+    "fiscal_period": "Q3 FY2025",
+    "calendar_period": "Quarter ended approximately Sep 2025 (call held Oct 23, 2025; September cited as last month of quarter)",
+    "company_overview": "Northwind Logistics is a US less-than-truckload freight carrier operating a terminal-based linehaul network, with a growing last-mile delivery segment and cross-border capacity (new Laredo terminal).",
+    "financial_summary": [
+      {
+        "metric": "Revenue",
+        "current": "$1.39B",
+        "prior": "$1.38B",
+        "change": "+0.7%"
+      },
+      {
+        "metric": "Revenue ex-fuel surcharge",
+        "current": "Not disclosed ($ amount)",
+        "prior": "Not disclosed",
+        "change": "+1.4%"
+      },
+      {
+        "metric": "Adjusted EPS",
+        "current": "$1.71",
+        "prior": "$1.79",
+        "change": "(4.5)%"
+      },
+      {
+        "metric": "GAAP EPS",
+        "current": "$1.63",
+        "prior": "Not disclosed",
+        "change": "Not disclosed; includes $9M San Antonio deferral costs"
+      },
+      {
+        "metric": "Operating ratio",
+        "current": "89.8%",
+        "prior": "88.4% (implied)",
+        "change": "+140 bps (worse)"
+      },
+      {
+        "metric": "Tonnage per day",
+        "current": "Down 4.3% y/y (Sept weakest at (5.6)%)",
+        "prior": "Not disclosed",
+        "change": "(4.3)%"
+      }
+    ],
+    "revenue_performance": "Revenue of $1.39B was essentially flat, up 0.7% y/y (+1.4% ex-fuel). The mix was entirely price-driven: revenue per hundredweight ex-fuel rose 5.1% while tonnage per day fell 4.3%, with every month negative and September worst at down 5.6%. Management walked away from roughly $40M of annualized revenue that failed margin thresholds as competitors discounted. Last-mile revenue was $204M, up 19% y/y (decelerating from +24% in Q2), and posted its first-ever positive operating margin at 0.4%. Free cash flow was $88M; buybacks were moderated to $20M; net leverage 1.4x adjusted EBITDA.",
+    "yoy_growth": "Revenue +0.7% y/y ($1.39B vs $1.38B); +1.4% ex-fuel surcharge. Adjusted EPS (4.5)% ($1.71 vs $1.79). Operating ratio 140 bps worse y/y at 89.8%. Tonnage/day (4.3)%; yield ex-fuel +5.1%. Last-mile revenue +19%. Cost lines: driver wage inflation ~6% per hour; insurance and claims expense +12% y/y; purchased transportation improved on last-mile insourcing. Headcount down 3% since June via attrition.",
+    "management_guidance": "FY2025 revenue cut to $5.55-5.65B from $5.75-5.85B (-$200M at midpoint). FY2025 adjusted EPS cut to $6.60-6.85 from $7.10-7.40 (-$0.5250 at midpoint). FY2025 capex reduced to $360M from $410M on the San Antonio deferral and a smaller tractor buy. Revised range assumes Q4 tonnage down 4-6% and yield improvement of approximately 4.5% as renewal increases moderate from high-single-digits. The previously discussed path to a mid-87s operating ratio in FY2026 was explicitly not reaffirmed; FY2026 guidance comes in January. San Antonio terminal opening pushed to fiscal 2026; demand assumed soft through at least calendar year-end.",
+    "guidance_bridge": [
+      {
+        "metric": "FY2025 revenue",
+        "prior": "$5.75B-$5.85B",
+        "current": "$5.55B-$5.65B",
+        "change": "-$200M at midpoint, (3.4)%"
+      },
+      {
+        "metric": "FY2025 adjusted EPS",
+        "prior": "$7.10-$7.40",
+        "current": "$6.60-$6.85",
+        "change": "-$0.525 at midpoint, (7.2)%"
+      },
+      {
+        "metric": "FY2025 capital expenditures",
+        "prior": "$410M",
+        "current": "$360M",
+        "change": "-$50M, (12.2)%"
+      },
+      {
+        "metric": "FY2026 operating ratio target (mid-87s)",
+        "prior": "Mid-87s OR discussed in July",
+        "current": "Withdrawn (not reaffirmed); FY2026 guidance in January",
+        "change": "Target removed"
+      },
+      {
+        "metric": "Q4 FY2025 tonnage / yield assumption",
+        "prior": "No prior guide",
+        "current": "Tonnage down 4% to 6%; yield improvement ~4.5%",
+        "change": "New disclosure; implies worse tonnage than July's flat to (2)% assumption"
+      }
+    ],
     "top_risks": [
-      "Deepening industrial demand/destocking weakness with no sign of stabilization — October tonnage tracking in line with September's -5.6%, and management explicitly is 'not calling a bottom.'",
-      "Structural cost-price gap: driver wage inflation of ~6% versus guided yield of ~4.5%, compounded by volume deleverage on a largely fixed terminal network and insurance/claims expense up 12% YoY.",
-      "Credibility and guidance risk — full-year revenue and EPS guidance cut, prior mid-87s FY2026 operating ratio target withdrawn, and management conceded July guidance assumed tonnage flat to -2% versus actual -4.3%."
+      "Volume deterioration has not stabilized: October to date is running in line with September's (5.6)% tonnage decline, and management explicitly refuses to call a bottom, leaving Q4's assumed (4)% to (6)% tonnage range exposed to further downside.",
+      "Structural cost/price gap: driver wages inflating ~6% per hour against guided yield of only ~4.5%, with insurance and claims up 12% y/y; CFO conceded closing the gap requires density and productivity that falling volume removes.",
+      "Credibility and forecast risk: guidance was cut only 90 days after a raise, with the CEO conceding the volume assumption was too optimistic, and the FY2026 mid-87s OR target has been pulled rather than reaffirmed."
     ],
     "top_opportunities": [
-      "Last-mile segment inflection: $204 million revenue (+19%) and first profitable quarter at 0.4% operating margin, driven by durable insourcing from purchased transportation.",
-      "Pricing discipline preserving long-term margin: yield up 5.1% ex-fuel held despite competitor discounting, with ~$40 million of annualized sub-threshold revenue walked away from.",
-      "Operating leverage on recovery plus network expansion — Laredo cross-border terminal open and on plan, 3% headcount reduction via attrition, capex cut to $360 million, and leverage at 1.4x provide flexibility when industrial demand returns."
+      "Last-mile inflected to profitability for the first time (revenue $204M, +19%, 0.4% operating margin) with management stating the driver — insourcing from purchased transportation — is durable and the segment should stay profitable.",
+      "Pricing discipline held (yield ex-fuel +5.1%) and management is defending margin thresholds, walking away from ~$40M of annualized revenue, which preserves mix quality for a volume recovery.",
+      "Balance sheet and cost flexibility: net leverage 1.4x, $88M quarterly FCF, capex cut $50M, San Antonio deferred and headcount down 3% via attrition — operating leverage should be meaningful when industrial demand returns."
     ],
     "key_quotes": [
       {
-        "speaker": "Dana Whitfield",
-        "quote": "Our July guidance assumed tonnage flat to down 2%, and we delivered down 4.3%. The industrial destocking was deeper and broader than customers told us it would be, and we compounded it by declining unprofitable freight. I own that the guidance was too optimistic on volume."
+        "speaker": "Dana Whitfield, President and CEO",
+        "quote": "Our July guidance assumed tonnage flat to down 2%, and we delivered down 4.3%. The industrial destocking was deeper and broader than customers told us it would be, and we compounded it by declining unprofitable freight. I own that the guidance was too optimistic on volume.",
+        "context": "Q&A"
       },
       {
-        "speaker": "Marcus Lee",
-        "quote": "If yield settles in the mid-4s and wages stay near 6%, we need productivity and density gains to close that gap, and density is exactly what a volume decline takes away. That's the honest picture, and it's a large part of why we're not reaffirming the fiscal 2026 target."
+        "speaker": "Marcus Lee, EVP and CFO",
+        "quote": "If yield settles in the mid-4s and wages stay near 6%, we need productivity and density gains to close that gap, and density is exactly what a volume decline takes away. That's the honest picture, and it's a large part of why we're not reaffirming the fiscal 2026 target.",
+        "context": "Q&A"
       },
       {
-        "speaker": "Dana Whitfield",
-        "quote": "We are not calling a bottom, but we are positioning the company to benefit when industrial demand returns."
+        "speaker": "Dana Whitfield, President and CEO",
+        "quote": "Our view is that freight priced below our cost of capital doesn't become profitable because the network has spare capacity; it just makes the network busier while destroying value. So the principle holds.",
+        "context": "Q&A"
       }
     ],
-    "sentiment": "Bearish",
-    "sentiment_reasoning": "Management cut both revenue and EPS guidance, withdrew the FY2026 operating ratio target, and reported accelerating tonnage declines (-5.6% in September, October tracking similar) with operating ratio deteriorating 140 bps. The positives — last-mile breakeven and 5.1% yield — are not large enough to offset volume deleverage and a structural wage-versus-yield gap.",
-    "analyst_summary": "Northwind delivered a weak Q3 FY2025: revenue of $1.39B (+0.7%) masked a 4.3% tonnage decline, with operating ratio deteriorating 140 bps to 89.8% and adjusted EPS falling 4.5% to $1.71. Guidance was cut meaningfully — FY revenue to $5.55–$5.65B and adjusted EPS to $6.60–$6.85 — and the prior mid-87s FY2026 OR target was withdrawn, a credibility hit just 90 days after a raise. The core issue is structural as well as cyclical: guided yield of ~4.5% no longer covers ~6% driver wage inflation, and volume declines strip away the density needed to close the gap. Offsets are real but small — last-mile at $204M (+19%) turned profitable for the first time at 0.4% margin, capex was cut to $360M, and leverage sits at a comfortable 1.4x — leaving the stock as a recovery option on industrial demand rather than a near-term earnings story.",
+    "disclosure_read": "Bearish",
+    "disclosure_reason": "Management cut FY2025 revenue by $200M and adjusted EPS by $0.525 at the midpoint just one quarter after raising, withdrew the FY2026 mid-87s operating ratio target, deferred a terminal, cut capex 12% and slowed buybacks. Tonnage is accelerating downward (September (5.6)%, October in line), the OR deteriorated 140 bps, and the CFO conceded a structural wage-versus-yield gap. The last-mile profitability milestone and pricing discipline are genuine positives but are small relative to the guidance reset.",
+    "analyst_summary": "Q3 was a price-held/volume-broke quarter: revenue +0.7% to $1.39B as 5.1% yield ex-fuel was overwhelmed by (4.3)% tonnage, driving a 140 bp OR deterioration to 89.8% and adjusted EPS of $1.71, (4.5)% y/y. The headline event is the guidance reset — FY25 revenue to $5.55-5.65B from $5.75-5.85B (-$200M midpoint, (3.4)%) and adjusted EPS to $6.60-6.85 from $7.10-7.40 (-$0.525 midpoint, (7.2)%) — on a Q4 assumption of (4)% to (6)% tonnage and only ~4.5% yield, below the high-single-digit renewals seen earlier in the year. More consequential for out-year models: the July mid-87s FY2026 operating ratio path was explicitly not reaffirmed, with the CFO framing the ~6% wage inflation versus mid-4s yield gap as structural and density-dependent. Self-help is visible — capex cut to $360M from $410M, San Antonio deferred (with a $9M GAAP charge), headcount down 3% via attrition, low-density linehaul schedules trimmed, leverage at 1.4x and $88M FCF — but buybacks were throttled to $20M to preserve flexibility. The one clean positive is last-mile: $204M revenue, +19%, first-ever positive operating margin at 0.4%, with management asserting no one-time benefit and durability from insourcing off purchased transportation. Watch items into the January FY26 guide: whether October's run-rate (in line with September's (5.6)%) inflects, the lane-by-lane review of pricing thresholds that could soften the yield-over-volume posture, and insurance/claims severity, up 12% y/y.",
     "_meta": {
       "characters": 9238,
       "estimated_tokens": 2639,
@@ -84,82 +232,83 @@
     }
   },
   "comparison": {
-    "headline": "Ninety days after a beat-and-raise built on pricing visibility, Northwind cut FY2025 revenue and EPS guidance, withdrew the FY2026 mid-87s operating ratio target, and saw tonnage fall 4.3% versus a flat-to-down-2% plan.",
+    "headline": "The volume softness management flagged in July deepened rather than stabilized, forcing a $200M revenue and $0.525 EPS guidance cut one quarter after a raise and the withdrawal of the FY2026 mid-87s operating ratio target.",
     "trajectory": "Deteriorating",
-    "sentiment_shift": "From Neutral (record Q2 OR and a raise, offset by candid flags on June tonnage and wage/yield spread) to Bearish (guidance cut, FY2026 target withdrawn, tonnage decline accelerating into October with management explicitly refusing to call a bottom). The Q2 caveats became the Q3 reality within one quarter.",
+    "disclosure_shift": "Q2 was a beat-and-raise wrapped in candid caveats — management volunteered that June tonnage was (2)%, that industrial demand was 'clearly softer than it was ninety days ago,' and that 6% wage inflation exceeded 5.2% yield, but all of that sat under a record Q2 OR and a guidance raise at both ends. Q3 flips the framing entirely: Whitfield opens with 'the third quarter was difficult, and I want to start by being direct about it,' and the softness 'did not stabilize. It deepened.' The CEO took personal ownership of the miss ('I own that the guidance was too optimistic on volume'), and the CFO escalated the wage/yield gap from a 'tension' being 'watched closely' to 'a structural headwind that doesn't depend on the cycle.' The mid-87s FY2026 OR path, introduced as new framing in July, was explicitly not reaffirmed. Disclosure moved from Neutral-with-warnings to unambiguously Bearish.",
     "deltas": [
       {
-        "metric": "Revenue (YoY growth)",
-        "earlier": "$1.42B, +8.4% (+9.6% ex-fuel)",
-        "later": "$1.39B, +0.7% (+1.4% ex-fuel)",
+        "metric": "Tonnage per day (y/y)",
+        "earlier": "+3.1% in Q2; June exit month (2)%",
+        "later": "(4.3)% in Q3; September (5.6)%; October 'about in line' with September",
         "direction": "down",
-        "commentary": "Growth effectively vanished in one quarter; ex-fuel growth collapsed from 9.6% to 1.4% as volume declines overwhelmed price."
-      },
-      {
-        "metric": "Tonnage per day (YoY)",
-        "earlier": "+3.1% (June exit -2%)",
-        "later": "-4.3% (September -5.6%, October tracking in line)",
-        "direction": "down",
-        "commentary": "A 740bp swing. Management admits ~$40M of annualized walked-away revenue contributed, but the bulk is industrial destocking that was 'deeper and broader' than customers signalled."
+        "commentary": "A 740 bp swing from Q2 to Q3 and still worsening month-by-month. The exit rate is worse than the quarter average, and management explicitly refuses to call a bottom."
       },
       {
         "metric": "Operating ratio",
-        "earlier": "88.4%, -80bps YoY (record Q2)",
-        "later": "89.8%, +140bps YoY",
+        "earlier": "88.4%, best Q2 in company history, (80) bps y/y",
+        "later": "89.8%, +140 bps y/y (worse)",
         "direction": "down",
-        "commentary": "From best-ever Q2 to a 140bp deterioration on volume deleverage across a largely fixed terminal network, plus insurance/claims +12% YoY — a cost line not flagged in Q2."
+        "commentary": "Not directly comparable quarter-to-quarter given seasonality, but the y/y direction reversed hard: from 80 bps of improvement to 140 bps of deterioration. Driven by volume deleverage on a fixed terminal network, ~6% wage inflation and insurance/claims +12%."
       },
       {
-        "metric": "Adjusted EPS",
-        "earlier": "$1.86, +11.4% YoY",
-        "later": "$1.71, -4.5% YoY",
+        "metric": "Revenue growth (y/y)",
+        "earlier": "+8.4% to $1.42B (+9.6% ex-fuel)",
+        "later": "+0.7% to $1.39B (+1.4% ex-fuel)",
         "direction": "down",
-        "commentary": "Earnings turned negative YoY. GAAP EPS $1.63 includes $9M of San Antonio deferral costs."
+        "commentary": "Growth essentially evaporated in one quarter. Price held (yield ex-fuel +5.1% vs +5.2%) — the entire delta is volume, compounded by ~$40M of annualized revenue walked away from on margin thresholds."
       },
       {
-        "metric": "FY2025 guidance (revenue / adj. EPS)",
-        "earlier": "$5.75–$5.85B / $7.10–$7.40 (raised)",
-        "later": "$5.55–$5.65B / $6.60–$6.85 (cut)",
+        "metric": "Adjusted EPS (y/y)",
+        "earlier": "$1.86, +11.4%",
+        "later": "$1.71, (4.5)%",
         "direction": "down",
-        "commentary": "~$200M revenue and ~$0.50 EPS taken out at both ends. Guidance was raised and then cut within a single quarter — a direct credibility hit Whitfield acknowledged: 'I own that the guidance was too optimistic on volume.'"
+        "commentary": "From double-digit growth to a y/y decline. GAAP EPS $1.63 includes $9M of San Antonio deferral costs."
       },
       {
-        "metric": "Yield (rev/cwt ex-fuel) vs. driver wage inflation",
-        "earlier": "+5.2% yield vs. ~6% wages; back-half renewals at high-single-digit",
-        "later": "+5.1% yield actual, Q4 guided ~4.5% vs. ~6% wages; renewals moderating from high-single-digit",
+        "metric": "FY2025 guidance (revenue / adj EPS)",
+        "earlier": "Raised to $5.75-5.85B / $7.10-7.40",
+        "later": "Cut to $5.55-5.65B / $6.60-6.85",
         "direction": "down",
-        "commentary": "The spread widened against the company. Pricing held in Q3 but the forward yield assumption fell ~70bp while wage inflation was unchanged — Lee now calls this a structural, not cyclical, headwind."
+        "commentary": "-$200M revenue (-3.4%) and -$0.525 EPS (-7.2%) at midpoint, fully reversing the July raise and then some. Q4 assumption moved from flat-to-(2)% tonnage with mid-single-digit yield to (4)% to (6)% tonnage with only ~4.5% yield as renewals moderate from high-single-digits."
+      },
+      {
+        "metric": "Last-mile segment",
+        "earlier": "$186M revenue, +24%; margin (1.8)% vs (6.1)% prior year",
+        "later": "$204M revenue, +19%; margin +0.4%, first profitable quarter ever",
+        "direction": "up",
+        "commentary": "The one clean positive. Breakeven arrived inside the two-to-three-quarter window guided in July; management says there was nothing one-time and the insourcing off purchased transportation is durable. Growth is decelerating as new-account onboarding laps."
       }
     ],
     "new_risks": [
-      "Insurance and claims expense up 12% YoY on higher accident severity — a cost line absent from Q2 commentary now contributing to OR deterioration.",
-      "Withdrawal of the FY2026 mid-87s operating ratio target with no replacement until January guidance, removing the anchor for out-year earnings models.",
-      "No visibility on trough: October tonnage running in line with September's -5.6%, and Q4 guides to -4% to -6%, implying no sequential improvement.",
-      "Capital allocation is now defensive — capex cut to $360M from $410M, San Antonio deferred, buybacks cut from $75M to $20M, net leverage up to 1.4x from 1.2x."
+      "Management credibility on forecasting: guidance cut 90 days after a raise, with the CEO conceding the volume assumption was too optimistic — raises the bar for the January FY2026 guide.",
+      "FY2026 earnings power is now unanchored: the mid-87s OR target was pulled rather than reaffirmed, leaving no out-year framework until January.",
+      "Insurance and claims expense up 12% y/y on industry-wide accident severity — a new cost line not flagged in Q2.",
+      "Pricing discipline may be partially eroding: management is reviewing margin thresholds 'lane by lane' and may be 'more flexible' in low-density lanes, a softening of July's unqualified 'we are not following' stance."
     ],
     "resolved_risks": [
-      "Last-mile profitability doubt: segment hit 0.4% operating margin with management stating there was nothing one-time in it.",
-      "Customer concentration escalation: top ten held flat at 31% of revenue rather than ticking up as guided in Q2.",
-      "Laredo terminal execution: opened in September with cross-border volumes in line with plan."
+      "Last-mile loss-making status resolved — segment turned profitable at 0.4% margin, with management stating no one-time benefit and durability from insourcing.",
+      "Customer concentration stabilized at 31% of revenue, flat q/q, rather than ticking up further as July guidance allowed for.",
+      "Purchased transportation cost pressure from last-mile peaks reversed, now a tailwind as accounts shifted onto owned capacity.",
+      "Execution risk on Laredo removed — terminal opened in September with cross-border volumes in line with plan."
     ],
-    "guidance_change": "Cut, hard. FY2025 revenue lowered to $5.55–$5.65B from $5.75–$5.85B and adjusted EPS to $6.60–$6.85 from $7.10–$7.40 — reversing July's raise and landing below the pre-raise $5.65–$5.80B / $6.95–$7.30 base. Underlying assumptions worsened on both axes: Q4 tonnage now -4% to -6% (was flat to -2% for the remainder of the year) and yield ~4.5% (was mid-single-digit with high-single-digit renewals). Capex cut to $360M from $410M with San Antonio pushed to FY2026. The FY2026 mid-87s OR target was explicitly not reaffirmed, deferred to January.",
-    "tone_change": "From confident-with-caveats to contrite. In July Whitfield framed the raise as 'fundamentally a yield story, not a volume story' and Lee cited a 'path to the mid-87s next year'; in October Whitfield opened with 'the third quarter was difficult, and I want to start by being direct about it' and conceded 'I own that the guidance was too optimistic on volume.' Lee shifted from 'we are watching that closely' on the wage/yield gap to labelling it 'a structural headwind that doesn't depend on the cycle... that's the honest picture, and it's a large part of why we're not reaffirming the fiscal 2026 target.' Notably, the pricing-discipline stance softened at the margin: Whitfield now says thresholds are under lane-by-lane review and the company 'may be more flexible' in low-density lanes — a crack in the July posture of walking away from freight without hesitation.",
+    "guidance_change": "Cut across the board. FY2025 revenue to $5.55-5.65B from $5.75-5.85B (-$200M, -3.4% at midpoint); adjusted EPS to $6.60-6.85 from $7.10-7.40 (-$0.525, -7.2%); capex to $360M from $410M (-12.2%). Q4 assumptions deteriorated on both legs: tonnage (4)% to (6)% versus July's flat-to-(2)%, and yield ~4.5% versus mid-single-digit, as contract renewals moderate from the high-single-digit increases that underpinned the July raise. Most consequentially, the FY2026 mid-87s operating ratio path was explicitly not reaffirmed, deferred to the January FY2026 guide. San Antonio terminal opening pushed to FY2026.",
+    "tone_change": "From confident-with-caveats to contrite and defensive. July opened with 'I'm pleased to report a strong second quarter' and framed the raise as 'fundamentally a yield story' with 'visibility' into renewals; Whitfield's July conditional — 'if tonnage were to fall materially further than that, we would have a conversation' — became the actual outcome. October opened with 'the third quarter was difficult' and closed with 'our guidance reflected an optimism on volume that did not materialize.' Lee moved from 'we are watching that closely' on the wage/yield gap to 'that's the honest picture, and it's a large part of why we're not reaffirming the fiscal 2026 target.' Management repeated 'we are not calling a bottom' twice and declined to characterize October as stabilizing.",
     "what_to_watch": [
-      "Whether tonnage declines trough — Q4 guides to -4% to -6% with October already tracking at September's -5.6%; any print worse than -6% breaks the revised guide.",
-      "The wage-versus-yield spread: Q4 yield guided to ~4.5% against ~6% driver wage inflation, and whether renewal pricing moderates further as competitors discount.",
-      "The FY2026 operating ratio framework due in January — how far below the withdrawn mid-87s target it lands, and whether San Antonio slips again or capex is cut further."
+      "Whether October's tonnage run-rate (in line with September's (5.6)%) inflects, versus the Q4 guide of (4)% to (6)% — the exit rate is currently tracking at the bad end of the range with no bottom called.",
+      "The January FY2026 guide, specifically whether an operating ratio framework is reinstated and where it lands against the withdrawn mid-87s, given the CFO's structural ~6% wage vs ~4.5% yield gap.",
+      "Whether the lane-by-lane threshold review stays 'not a broad change in posture' or becomes a material softening of pricing discipline — and whether yield ex-fuel holds above 4.5% in Q4 as renewals moderate."
     ]
   },
   "_meta": {
     "usage": {
       "calls": 3,
-      "input_tokens": 21297,
-      "output_tokens": 6216,
+      "input_tokens": 26697,
+      "output_tokens": 9985,
       "models": [
         "claude-opus-5"
       ],
-      "elapsed_seconds": 56.0
+      "elapsed_seconds": 81.3
     },
-    "generated_at": "September 13, 2026"
+    "generated_at": "October 16, 2026"
   }
 }

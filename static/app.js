@@ -73,6 +73,23 @@
     (items || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")
   }</ol>`;
 
+  const dataTable = (headers, rows) => `
+    <div class="table-scroll">
+      <table class="ledger">
+        <thead><tr>${headers.map((h, i) => `
+          <th${i ? ' class="ledger__num"' : ""}>${escapeHtml(h)}</th>`).join("")}</tr></thead>
+        <tbody>${rows.map((row) => `<tr>${row.map((cell, i) => `
+          <td${i ? ' class="ledger__num"' : ""}>${prose(cell)}</td>`).join("")}</tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+
+  const quoteBlock = (entry) => `
+    <blockquote class="quote">
+      <p>“${prose(entry.quote)}”</p>
+      <cite>${escapeHtml(entry.speaker)}${entry.context ? `
+        <span class="quote__context quote__context--${slug(entry.context)}">${escapeHtml(entry.context)}</span>` : ""}</cite>
+    </blockquote>`;
+
   const plainList = (items, emptyText) => (items && items.length)
     ? `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
     : `<p class="empty">${escapeHtml(emptyText)}</p>`;
@@ -334,7 +351,9 @@
   };
 
   function renderAnalysis(data) {
-    const meta = [data.document_type, data.reporting_period]
+    const period = [data.fiscal_period, data.calendar_period]
+      .filter((part) => part && part !== "Not stated").join(" · ");
+    const meta = [data.document_type, period]
       .filter(Boolean).map((part) => `<span>${escapeHtml(part)}</span>`).join("");
 
     const docMeta = data._meta || {};
@@ -350,32 +369,40 @@
             <h3>${escapeHtml(data.company_name)}</h3>
             <div class="summary-card__meta">${meta}</div>
           </div>
-          <span class="badge badge--${slug(data.sentiment)}">${escapeHtml(data.sentiment)}</span>
+          <div class="summary-card__read">
+            <span class="badge badge--${slug(data.disclosure_read)}">${escapeHtml(data.disclosure_read)}</span>
+            <span class="summary-card__read-label">Disclosure read · not a view on the shares</span>
+          </div>
         </div>
-        <div class="summary-card__note">${escapeHtml(data.analyst_summary)}</div>
-        <div class="summary-card__reason">${escapeHtml(data.sentiment_reasoning)}</div>
+        <div class="summary-card__note">${prose(data.analyst_summary)}</div>
+        <div class="summary-card__reason">${prose(data.disclosure_reason)}</div>
       </div>
 
       <div class="card-grid">
-        ${card("building", "Company overview", `<p>${escapeHtml(data.company_overview)}</p>`)}
-        ${card("revenue", "Revenue & earnings", `<p>${escapeHtml(data.revenue_performance)}</p>`)}
-        ${card("growth", "Year-over-year", `<p>${escapeHtml(data.yoy_growth)}</p>`)}
-        ${card("compass", "Guidance & outlook", `<p>${escapeHtml(data.management_guidance)}</p>`)}
+        ${(data.financial_summary || []).length ? card("revenue", "Reported financials",
+          dataTable(["Metric", "This period", "Prior year", "Change"],
+            data.financial_summary.map((row) => [row.metric, row.current, row.prior, row.change])),
+          true) : ""}
+        ${(data.guidance_bridge || []).length ? card("compass", "Guidance bridge",
+          dataTable(["Guidance", "Prior", "Current", "Change at midpoint"],
+            data.guidance_bridge.map((row) => [row.metric, row.prior, row.current, row.change])),
+          true) : ""}
+        ${card("building", "Company overview", `<p>${prose(data.company_overview)}</p>`)}
+        ${card("revenue", "What the numbers say", `<p>${prose(data.revenue_performance)}</p>`)}
+        ${card("growth", "Year-over-year", `<p>${prose(data.yoy_growth)}</p>`)}
+        ${card("compass", "Guidance & outlook", `<p>${prose(data.management_guidance)}</p>`)}
         ${card("risk", "Top risks", rankedList(data.top_risks))}
         ${card("opportunity", "Top opportunities", rankedList(data.top_opportunities))}
-        ${card("quote", "Key executive quotes", (data.key_quotes || []).map((entry) => `
-          <blockquote class="quote">
-            <p>“${escapeHtml(entry.quote)}”</p>
-            <cite>${escapeHtml(entry.speaker)}</cite>
-          </blockquote>`).join(""), true)}
+        ${card("quote", "Key executive quotes",
+          (data.key_quotes || []).map(quoteBlock).join(""), true)}
       </div>
       ${chunkNote}`;
   }
 
   function renderComparison(payload) {
     const { earlier, later, comparison } = payload;
-    const earlierLabel = earlier.reporting_period || "Earlier";
-    const laterLabel = later.reporting_period || "Later";
+    const earlierLabel = earlier.fiscal_period || "Earlier";
+    const laterLabel = later.fiscal_period || "Later";
     const arrows = { up: "▲", down: "▼" };
 
     const rows = (comparison.deltas || []).map((delta) => `
@@ -398,13 +425,13 @@
             <h3>${escapeHtml(later.company_name || earlier.company_name)}</h3>
             <div class="summary-card__meta">
               <span>${escapeHtml(earlierLabel)} → ${escapeHtml(laterLabel)}</span>
-              <span>${escapeHtml(earlier.sentiment)} → ${escapeHtml(later.sentiment)}</span>
+              <span>${escapeHtml(earlier.disclosure_read)} → ${escapeHtml(later.disclosure_read)}</span>
             </div>
           </div>
           <span class="badge badge--${slug(comparison.trajectory)}">${escapeHtml(comparison.trajectory)}</span>
         </div>
         <div class="summary-card__note">${escapeHtml(comparison.headline)}</div>
-        <div class="summary-card__reason">${escapeHtml(comparison.sentiment_shift)}</div>
+        <div class="summary-card__reason">${prose(comparison.disclosure_shift)}</div>
       </div>
 
       <div class="card-grid">
@@ -443,7 +470,8 @@
   function renderMemo(memo) {
     const figures = (memo.key_figures || []).map((figure) => `
       <div class="memo__figure">
-        <div class="memo__figure-label">${escapeHtml(figure.label)}</div>
+        <div class="memo__figure-label">${escapeHtml(figure.label)}
+          ${figure.period ? `<span>${escapeHtml(figure.period)}</span>` : ""}</div>
         <div class="memo__figure-value">${escapeHtml(figure.value)}</div>
         <div class="memo__figure-change">${escapeHtml(figure.change || "")}</div>
       </div>`).join("");
@@ -455,6 +483,7 @@
           <li>
             <p class="memo__claim">${prose(item.claim)}</p>
             <p class="memo__evidence">${prose(item.evidence)}</p>
+            ${item.implication ? `<p class="memo__implication">${prose(item.implication)}</p>` : ""}
           </li>`).join("")}</ol>
       </div>`;
 
@@ -492,10 +521,14 @@
             <li><span>${prose(c.event)}</span><time>${escapeHtml(c.timing)}</time></li>`).join("")}</ul>`)}
         ${section("Still to answer", `<ol class="memo__questions">${(memo.open_questions || []).map((q) => `
             <li>${prose(q)}</li>`).join("")}</ol>`)}
+        ${(memo.what_would_change_the_read || []).length ? section("What would change the read",
+          `<ol class="memo__questions">${memo.what_would_change_the_read.map((item) => `
+            <li>${prose(item)}</li>`).join("")}</ol>`) : ""}
         ${section("In their words", (memo.quotes || []).map((q) => `
             <blockquote class="memo__quote">
               <p>“${prose(q.quote)}”</p>
-              <cite>${escapeHtml(q.speaker)}</cite>
+              <cite>${escapeHtml(q.speaker)}${q.context ? `
+                <span class="quote__context quote__context--${slug(q.context)}">${escapeHtml(q.context)}</span>` : ""}</cite>
             </blockquote>`).join(""))}
 
         <footer class="memo__foot">

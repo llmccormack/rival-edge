@@ -138,7 +138,7 @@ class TestSamplesAndExamples:
         (tmp_path / "example-analysis.json").write_text(json.dumps(fixtures.analysis()))
         response = client.get("/api/examples/analysis")
         assert response.status_code == 200
-        assert response.get_json()["sentiment"] == "Bullish"
+        assert response.get_json()["disclosure_read"] == "Bullish"
 
 
 class TestExport:

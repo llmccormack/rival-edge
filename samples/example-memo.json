@@ -1,69 +1,79 @@
 {
   "company_name": "Northwind Logistics, Inc.",
-  "basis": "Q3 FY2025 earnings call transcript, October 23, 2025 (fictional sample document)",
-  "situation": "Northwind cut FY guidance 90 days after raising it. Tonnage per day fell 4.3% with September at -5.6% and October tracking in line. Operating ratio worsened 140 bps to 89.8%. Management declined to reaffirm the FY2026 mid-87s OR target and will not call a bottom.",
+  "basis": "Q3 FY2025 earnings call, held October 23, 2025 (fictional sample document).",
+  "situation": "Northwind cut FY25 revenue and adjusted EPS guidance and declined to reaffirm its FY2026 mid-87s operating ratio target. Revenue grew 0.7% to $1.39B entirely on yield; tonnage per day fell 4.3%, with September at (5.6)% and October tracking the same. The CEO said he owns that July guidance was too optimistic.",
   "key_figures": [
     {
       "label": "Revenue",
       "value": "$1.39B",
-      "change": "+0.7% YoY",
+      "period": "3Q FY25",
+      "change": "+0.7% y/y",
       "direction": "up"
     },
     {
       "label": "Adjusted EPS",
       "value": "$1.71",
-      "change": "-4.5% YoY",
+      "period": "3Q FY25",
+      "change": "(4.5)% y/y",
       "direction": "down"
     },
     {
       "label": "Operating ratio",
       "value": "89.8%",
-      "change": "+140 bps YoY",
+      "period": "3Q FY25",
+      "change": "+140 bps worse",
       "direction": "down"
     },
     {
       "label": "Tonnage per day",
-      "value": "-4.3%",
-      "change": "Sept -5.6%",
+      "value": "(4.3)%",
+      "period": "3Q FY25",
+      "change": "Sept (5.6)%",
       "direction": "down"
     }
   ],
   "bull_case": [
     {
-      "claim": "Pricing held at 5.1% ex-fuel yield despite competitor discounting",
-      "evidence": "Whitfield: 'Our pricing held. Revenue per hundredweight, excluding fuel surcharge, increased 5.1%,' even after walking away from ~$40M of annualized revenue."
+      "claim": "Last-mile turned profitable on a durable insourcing shift",
+      "evidence": "Last-mile revenue was $204M, +19% y/y, with a 0.4% operating margin, the first profitable quarter ever; Whitfield said there was \"nothing one-time in it.\"",
+      "implication": "A fast-growing segment stops diluting group margin and starts adding to it, with purchased transportation falling out of the cost base."
     },
     {
-      "claim": "Last-mile turned profitable for the first time ever",
-      "evidence": "Last-mile revenue $204M, +19% YoY, at 0.4% operating margin; Whitfield said 'nothing one-time in it,' driven by insourcing off purchased transportation."
+      "claim": "Cost and capital taken out ahead of the downturn",
+      "evidence": "Capex cut to $360M from $410M, headcount down 3% since June via attrition, low-density linehaul schedules reduced, San Antonio deferred; FCF $88M, net leverage 1.4x.",
+      "implication": "Lower fixed cost and a 1.4x balance sheet mean deleverage reverses into operating leverage when tonnage returns."
     },
     {
-      "claim": "Balance sheet and capex flexed down fast",
-      "evidence": "FY capex cut to $360M from $410M, San Antonio deferred, buybacks moderated to $20M, FCF $88M, net leverage 1.4x adjusted EBITDA."
+      "claim": "Pricing discipline held through competitor discounting",
+      "evidence": "Revenue per cwt ex-fuel +5.1% y/y while roughly $40M of annualized revenue was walked; Whitfield: the principle that below-cost freight \"destroys value\" holds.",
+      "implication": "Protects the yield base so margin recovery does not have to start from a repriced book when volume comes back."
     }
   ],
   "bear_case": [
     {
-      "claim": "Guidance cut hard one quarter after a raise",
-      "evidence": "FY revenue to $5.55–$5.65B from $5.75–$5.85B; adjusted EPS to $6.60–$6.85 from $7.10–$7.40. Whitfield: 'I own that the guidance was too optimistic on volume.'"
+      "claim": "FY2026 operating ratio target withdrawn, not just deferred",
+      "evidence": "Lee: \"we do not believe it's appropriate to reaffirm that target today\"; the July path to a mid-87s FY26 OR is gone, with FY26 guidance pushed to January.",
+      "implication": "Removes the anchor for FY26 earnings power; the bridge from 89.8% back to the mid-87s no longer has a company-stated path."
     },
     {
-      "claim": "FY2026 mid-87s operating ratio target withdrawn",
-      "evidence": "Lee said it is not 'appropriate to reaffirm that target today'; FY2026 guidance deferred to January amid uncertainty on industrial recovery timing."
+      "claim": "Structural wage-versus-yield gap that density can no longer close",
+      "evidence": "Lee: driver wages near 6%, Q4 yield guided to ~4.5%, and \"density is exactly what a volume decline takes away.\"",
+      "implication": "A ~150 bp cost-over-price gap compresses margin even if the cycle turns, unless productivity gains are found elsewhere."
     },
     {
-      "claim": "Wages at ~6% run above yield guided to ~4.5%",
-      "evidence": "Lee called the wage-yield gap 'a structural headwind that doesn't depend on the cycle,' requiring density gains while Q4 tonnage is guided down 4–6%."
+      "claim": "No visible volume bottom; Q4 assumption cut hard",
+      "evidence": "Q4 embeds tonnage (4)% to (6)% versus July's flat-to-(2)%; October \"running about in line with September,\" and Whitfield: \"We are not calling a bottom.\"",
+      "implication": "Continued deleverage on a largely fixed terminal network keeps operating ratio under pressure into FY26."
     }
   ],
   "catalysts": [
     {
-      "event": "FY2026 guidance and OR target update",
+      "event": "FY2026 guidance, including reset operating ratio target",
       "timing": "January"
     },
     {
-      "event": "Q4 results: tonnage -4% to -6%, yield ~4.5%",
-      "timing": "Q4 FY2025"
+      "event": "Q4 FY25 print against tonnage (4)-(6)%, yield ~4.5%",
+      "timing": "Q4 FY25 results"
     },
     {
       "event": "San Antonio terminal opening after deferral",
@@ -71,31 +81,38 @@
     }
   ],
   "open_questions": [
-    "Where do the new FY EPS range of $6.60–$6.85 and the lowered revenue range sit versus current consensus after the cut?",
-    "How does Northwind's -4.3% tonnage and 89.8% operating ratio compare with LTL peers reporting the same quarter?",
-    "What is the revenue and margin impact if competitors keep discounting and Northwind loses more than the $40M of annualized revenue it walked away from?"
+    "Where does consensus sit versus the new $6.60-$6.85 adjusted EPS range, and how much of the FY26 mid-87s OR withdrawal was already in numbers?",
+    "How does Northwind's (4.3)% tonnage and +5.1% yield ex-fuel compare with LTL peers reporting the same quarter — is this share loss or industry demand?",
+    "Is the ~$40M of walked annualized revenue showing up in peer tonnage, and at what price did competitors take it?"
   ],
   "quotes": [
     {
-      "speaker": "Dana Whitfield, CEO",
-      "quote": "The softness in industrial demand that we flagged in July did not stabilize. It deepened."
+      "speaker": "Dana Whitfield, President & CEO",
+      "quote": "Our July guidance assumed tonnage flat to down 2%, and we delivered down 4.3%... I own that the guidance was too optimistic on volume.",
+      "context": "Q&A"
     },
     {
-      "speaker": "Marcus Lee, CFO",
-      "quote": "If yield settles in the mid-4s and wages stay near 6%, we need productivity and density gains to close that gap, and density is exactly what a volume decline takes away."
+      "speaker": "Marcus Lee, EVP & CFO",
+      "quote": "If yield settles in the mid-4s and wages stay near 6%, we need productivity and density gains to close that gap, and density is exactly what a volume decline takes away.",
+      "context": "Q&A"
     }
   ],
+  "what_would_change_the_read": [
+    "Tonnage per day improving to better than (4)% and off September's (5.6)% pace in the Q4 print, versus the guided (4)% to (6)%.",
+    "January FY2026 guidance restoring an operating ratio target at or near the mid-87s, with yield ex-fuel held above the ~6% wage inflation rate."
+  ],
   "disclosure_read": "Bearish",
-  "disclosure_reason": "Management cut revenue and EPS guidance, pulled the FY2026 operating ratio target, and refused to call a bottom with October tracking at September's -5.6%, while the positives — last-mile profitability, 5.1% yield, Laredo — are too small to offset core network deterioration.",
+  "disclosure_reason": "Management cut FY25 revenue $200M and adjusted EPS $0.53 at the midpoint, withdrew the FY26 mid-87s operating ratio target, deferred a terminal and cut capex 12%, with tonnage worsening into October and no bottom called.",
   "_meta": {
     "usage": {
       "calls": 1,
-      "input_tokens": 7124,
-      "output_tokens": 1457,
+      "input_tokens": 9351,
+      "output_tokens": 1960,
       "models": [
         "claude-opus-5"
       ],
-      "elapsed_seconds": 17.8
-    }
+      "elapsed_seconds": 27.5
+    },
+    "generated_at": "October 16, 2026"
   }
 }

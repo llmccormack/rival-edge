@@ -17,9 +17,9 @@ def pdf_text(data: bytes) -> str:
 def test_analysis_report_contains_every_section():
     text = pdf_text(report.build_analysis_pdf(fixtures.analysis()))
     for heading in (
-        "ANALYST SUMMARY", "COMPANY OVERVIEW", "REVENUE AND EARNINGS PERFORMANCE",
-        "YEAR-OVER-YEAR GROWTH", "MANAGEMENT GUIDANCE", "TOP RISKS", "TOP OPPORTUNITIES",
-        "KEY EXECUTIVE QUOTES",
+        "ANALYST SUMMARY", "REPORTED FINANCIALS", "GUIDANCE BRIDGE", "COMPANY OVERVIEW",
+        "WHAT THE NUMBERS SAY", "YEAR-OVER-YEAR GROWTH", "MANAGEMENT GUIDANCE", "TOP RISKS",
+        "TOP OPPORTUNITIES", "KEY EXECUTIVE QUOTES",
     ):
         assert heading in text
     assert "Testco Freight, Inc." in text
@@ -111,3 +111,19 @@ class TestMemo:
         text = pdf_text(report.build_memo_pdf(fixtures.memo()))
         assert "No valuation, consensus or peer data" in text
         assert "Not investment advice" in text
+
+
+def test_table_rows_do_not_overlap_when_a_bold_cell_wraps():
+    # The first column renders bold and wraps sooner than the regular columns,
+    # so row height has to be measured in the weight each cell is drawn in.
+    data = fixtures.analysis()
+    data["guidance_bridge"] = [
+        {"metric": "FY2025 capital expenditures and fleet", "prior": "$410M",
+         "current": "$360M", "change": "-$50M, (12.2)%"},
+        {"metric": "FY2026 operating ratio target", "prior": "Mid-87s",
+         "current": "Withdrawn", "change": "Target removed"},
+    ]
+    # Cells wrap, so compare on collapsed whitespace.
+    text = " ".join(pdf_text(report.build_analysis_pdf(data)).split())
+    assert "FY2025 capital expenditures and fleet" in text
+    assert "FY2026 operating ratio target" in text

@@ -9,7 +9,7 @@
 
 **[Try the live demo →](https://llmccormack.github.io/rival-edge/)** <sub>A static build showing saved output from real Claude runs, so no setup and no API key.</sub>
 
-Paste a transcript or upload a filing. Rival Edge extracts revenue and earnings, year-over-year growth, guidance, ranked risks and opportunities, verbatim executive quotes, and a sentiment call with reasoning. It can compare two quarters to show what actually changed, and it exports either view as a typeset PDF.
+Paste a transcript, upload a filing, or pull one from EDGAR by ticker. Rival Edge returns the reported financials as a table, a guidance bridge showing what management changed and by how much at the midpoint, ranked risks and opportunities, verbatim quotes tagged by whether they came from prepared remarks or Q&A, and a read on the tone of the disclosure. It compares two quarters, drafts a one-page investment memo, and exports any view as a typeset PDF.
 
 ![Single-document analysis of the sample Q3 earnings call](docs/screenshot-analysis.png)
 
@@ -38,7 +38,14 @@ No API key? The app still runs. It shows saved output from a real run, so you ca
 
 ### Structured analysis
 
-Every run returns the same fields, each rendered as its own card: company overview, revenue and earnings with actual figures, year-over-year growth, guidance and outlook, three ranked risks, three ranked opportunities, three verbatim quotes with speakers, a Bullish / Neutral / Bearish call with reasoning, and a 3–4 sentence analyst summary.
+Every run returns the same fields, in the order a reader actually scans them:
+
+- **Reported financials**, as a table: metric, this period, prior year, change — not a paragraph of numbers.
+- **A guidance bridge**: every forward number management raised, cut, reaffirmed or withdrew, with the move computed at the midpoint. On the sample quarter it returns "-$200M at midpoint, (3.4)%" rather than restating two ranges and leaving the arithmetic to you.
+- **The period, unambiguously**: the fiscal label and the calendar months behind it, since fiscal years differ by company.
+- **Three ranked risks and opportunities**, a company overview, and an analyst summary written as a note.
+- **Three verbatim quotes, tagged by context.** An unscripted Q&A answer carries more weight than prepared remarks written by IR, so the model is told to prefer Q&A and to record where each quote was said.
+- **A disclosure read** — Bullish, Neutral or Bearish — labelled in the interface as a read on the tone of the disclosure, not a view on the shares. The app has no price or valuation data and never implies one.
 
 The model is told to use only figures that appear in the document and to write "Not disclosed" instead of guessing. On the sample transcripts, every quote in the saved output appears verbatim in the source.
 
@@ -91,9 +98,9 @@ flowchart LR
 
 | Mode | Claude calls | Typical time | Tokens (in / out) | Approx. cost |
 | --- | --- | --- | --- | --- |
-| Single earnings call | 1 | ~25 s | 4.5k / 1.8k | $0.07 |
-| Two-quarter comparison | 3 | ~55 s | 21k / 6.2k | $0.26 |
-| Investment memo | 1 | ~18 s | 7.1k / 1.5k | $0.07 |
+| Single earnings call | 1 | ~43 s | 5.6k / 3.3k | $0.11 |
+| Two-quarter comparison | 3 | ~81 s | 27k / 10k | $0.38 |
+| Investment memo | 1 | ~28 s | 9.4k / 2.0k | $0.10 |
 
 <sub>Measured on the sample transcripts. Cost at Claude Opus 5 list pricing ($5 / $25 per million tokens) when measured.</sub>
 
@@ -117,6 +124,8 @@ That came with a constraint worth knowing about. Structured outputs reject `minI
 
 **Long runs can't hit a timeout or a length cap.** Every request streams, so multi-minute calls don't hit HTTP timeouts. Opus 5 thinks by default, and thinking counts toward `max_tokens`, so the ceiling is set high (64k) to leave room for reasoning. The call is still billed only for tokens actually used.
 
+**The output is shaped like a note, not a summary.** The first version returned guidance as prose, which buried the most important item in any quarter inside a paragraph and left the reader doing arithmetic. Guidance is now a bridge with the midpoint move computed, reported financials are a table, and quotes record whether they came from the script or from Q&A. Tests assert that contract so the structure cannot quietly regress into prose.
+
 **The memo refuses to fake a thesis.** It is told it does not know the share price and must not imply one, so there is no target, multiple, or buy/sell. What a pitch still needs — valuation, consensus, peer comparison — becomes the memo's "Still to answer" section instead of being invented. The PDF footer carries the same disclaimer.
 
 **Print typography is treated as real typography.** The PDFs use Windows-1252 rather than fpdf2's Latin-1 default, so curly quotes, en and em dashes and ellipses survive from the filing instead of being flattened to typewriter marks, and a conservative pass upgrades straight quotes where it is unambiguous. The screen applies the same rules, so both read alike.
@@ -129,7 +138,7 @@ That came with a constraint worth knowing about. Structured outputs reject `minI
 
 ```bash
 pip install -r requirements-dev.txt
-pytest          # 92 tests, ~8 seconds, no network
+pytest          # 100 tests, ~8 seconds, no network
 ruff check .
 ```
 

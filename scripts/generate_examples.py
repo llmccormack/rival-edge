@@ -6,8 +6,8 @@ ANTHROPIC_API_KEY. Writes:
 
     samples/example-analysis.json     single-document analysis of the Q3 call
     samples/example-comparison.json   Q2 -> Q3 comparison
-    docs/example-analysis.pdf         PDF export of the analysis
-    docs/example-comparison.pdf       PDF export of the comparison
+    samples/example-memo.json         one-page memo drafted from the analysis
+    docs/example-*.pdf                the PDF export of each
 
 The app serves the JSON files as a browsable example when no API key is set.
 
@@ -29,8 +29,8 @@ from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv(ROOT / ".env")
 
-from analyzer import AnalyzerError, analyze_document, compare_documents  # noqa: E402
-from report import build_analysis_pdf, build_comparison_pdf  # noqa: E402
+from analyzer import AnalyzerError, analyze_document, compare_documents, draft_memo  # noqa: E402
+from report import build_analysis_pdf, build_comparison_pdf, build_memo_pdf  # noqa: E402
 
 SAMPLES = ROOT / "samples"
 DOCS = ROOT / "docs"
@@ -63,14 +63,22 @@ def main() -> int:
         comparison = compare_documents(earlier, later, log)
         comparison["_meta"]["generated_at"] = generated
         print(f"  done: {summarize(comparison['_meta']['usage'])}")
+
+        print("\nInvestment memo (Q3 FY2025)")
+        memo = draft_memo(analysis, [later], log)
+        memo["_meta"]["generated_at"] = generated
+        print(f"  done: {summarize(memo['_meta']['usage'])}")
     except AnalyzerError as exc:
         print(f"\nFailed: {exc}", file=sys.stderr)
         return 1
 
     (SAMPLES / "example-analysis.json").write_text(json.dumps(analysis, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     (SAMPLES / "example-comparison.json").write_text(json.dumps(comparison, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    (SAMPLES / "example-memo.json").write_text(
+        json.dumps(memo, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     (DOCS / "example-analysis.pdf").write_bytes(build_analysis_pdf(analysis))
     (DOCS / "example-comparison.pdf").write_bytes(build_comparison_pdf(comparison))
+    (DOCS / "example-memo.pdf").write_bytes(build_memo_pdf(memo))
 
     print("\nWrote samples/example-*.json and docs/example-*.pdf\n")
     return 0

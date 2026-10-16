@@ -1145,3 +1145,87 @@ textarea:focus, .dropzone:focus-visible, .tab:focus-visible, button:focus-visibl
   .memo__title { flex-direction: column; gap: 8px; }
   .memo__title h2 { font-size: 24px; }
 }
+
+/* ---------------------------------------------------------- data tables */
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 14px 8px 0;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.ledger td {
+  padding: 9px 14px 9px 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-soft);
+  vertical-align: top;
+}
+
+.ledger tr:last-child td { border-bottom: none; }
+.ledger td:first-child { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.ledger th:last-child, .ledger td:last-child { padding-right: 0; }
+
+/* Figures read down the column, so they sit left-aligned but tabular. */
+.ledger__num { font-variant-numeric: tabular-nums; }
+
+.quote__context {
+  display: inline-block;
+  margin-left: 9px;
+  padding: 2px 7px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+}
+
+/* Unscripted answers carry more weight, so they are the ones marked. */
+.quote__context--qa { color: var(--accent-ink); background: var(--accent-soft); }
+.quote__context--preparedremarks,
+.quote__context--filingtext { color: var(--muted); background: #eef1f5; }
+
+.summary-card__read { text-align: right; }
+
+.summary-card__read-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: #8ba0b4;
+}
+
+.memo__figure-label span {
+  display: block;
+  margin-top: 2px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #9aa8b6;
+}
+
+.memo__implication {
+  margin: 5px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--accent-soft);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+@media (max-width: 560px) {
+  .summary-card__read { text-align: left; }
+  .ledger { font-size: 12.5px; }
+}
