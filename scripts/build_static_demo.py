@@ -24,7 +24,8 @@ from flask import render_template  # noqa: E402
 from analyzer import MODEL_LABEL  # noqa: E402
 from app import EXAMPLE_OUTPUTS, REPO_URL, SAMPLE_TRANSCRIPTS, SAMPLES_DIR, app  # noqa: E402
 
-EXAMPLE_PDFS = ["example-analysis.pdf", "example-comparison.pdf"]
+# Every saved example ships with its PDF, so export works in the demo too.
+EXAMPLE_PDFS = [name.replace(".json", ".pdf") for name in EXAMPLE_OUTPUTS.values()]
 
 
 def build(output: Path) -> Path:

@@ -22,7 +22,8 @@ def test_build_produces_a_self_contained_site(tmp_path):
     for name in ("example-analysis.json", "example-comparison.json"):
         json.loads((site / "samples" / name).read_text(encoding="utf-8"))
     assert (site / "samples" / "northwind-q3-fy2025-earnings-call.txt").is_file()
-    assert (site / "docs" / "example-comparison.pdf").read_bytes()[:4] == b"%PDF"
+    for name in ("example-analysis.pdf", "example-comparison.pdf", "example-memo.pdf"):
+        assert (site / "docs" / name).read_bytes()[:4] == b"%PDF", name
 
 
 def test_server_mode_is_not_demo(client):
