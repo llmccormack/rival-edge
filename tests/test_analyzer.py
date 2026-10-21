@@ -153,3 +153,25 @@ def test_period_label_is_a_label_not_a_sentence():
     # It renders inline in the masthead, so it has to stay short.
     description = analyzer.ANALYSIS_SCHEMA["properties"]["calendar_period"]["description"]
     assert "Under 20" in description and "not a sentence" in description
+
+
+class TestSourcingDiscipline:
+    """Rules added after a live run carried an analyst's figure into a table."""
+
+    def test_analyst_assertions_are_not_treated_as_disclosure(self):
+        for prompt in (analyzer.ANALYSIS_SYSTEM, analyzer.MEMO_SYSTEM):
+            assert "is not disclosure" in prompt, prompt[:40]
+
+    def test_absent_prior_guide_is_distinguished_from_no_guide(self):
+        prior = analyzer.ANALYSIS_SCHEMA["properties"]["guidance_bridge"]["items"]["properties"]["prior"]
+        assert "Not stated in this document" in prior["description"]
+        assert "first time" in prior["description"]
+
+    def test_change_column_cannot_claim_a_move_it_cannot_measure(self):
+        change = analyzer.ANALYSIS_SCHEMA["properties"]["guidance_bridge"]["items"]["properties"]["change"]
+        assert "never 'Raised' or 'Cut'" in change["description"]
+        assert "Not comparable" in change["description"]
+
+    def test_reporting_basis_must_be_labelled(self):
+        assert "constant currency" in analyzer.ANALYSIS_SYSTEM
+        assert "does not reconcile" in analyzer.ANALYSIS_SYSTEM

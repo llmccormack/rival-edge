@@ -203,14 +203,24 @@ ANALYSIS_SCHEMA: dict[str, Any] = {
                 "type": "object",
                 "properties": {
                     "metric": {"type": "string", "description": "e.g. 'FY2025 revenue'."},
-                    "prior": {"type": "string", "description": "The previous guide, or 'No prior guide'."},
+                    "prior": {
+                        "type": "string",
+                        "description": (
+                            "The previous guide. If the company guided before but this "
+                            "document does not restate it, write 'Not stated in this "
+                            "document'. Only write 'No prior guide' when the company is "
+                            "guiding to this measure for the first time."
+                        ),
+                    },
                     "current": {"type": "string", "description": "The guide as it now stands, or 'Withdrawn'."},
                     "change": {
                         "type": "string",
                         "description": (
                             "The move at the midpoint, in the figure's own units and as a "
                             "percentage where both ends are given, e.g. '-$200M at midpoint, "
-                            "(3.5)%'. Compute it; do not restate the ranges."
+                            "(3.5)%'. Compute it; do not restate the ranges or the current "
+                            "midpoint. Where the prior value is unknown this reads 'New "
+                            "guide' or 'Not comparable', never 'Raised' or 'Cut'."
                         ),
                     },
                 },
@@ -517,14 +527,27 @@ What matters most, in order:
 3. What management said under questioning, as opposed to in the script.
 
 Rules:
-- Use only figures that appear in the document. Never estimate, extrapolate or invent.
-  Deriving a midpoint or a percentage change from two stated numbers is arithmetic, \
-  not estimation: do that.
-- If the document does not state something, write "Not disclosed" rather than guessing.
+- Use only figures the COMPANY states or confirms. An analyst asserting a number \
+  inside a question is not disclosure: do not carry it into a table. If management \
+  confirms it, it is usable and you attribute it to management; if they do not, \
+  leave it out.
+- Never estimate, extrapolate or invent. Deriving a midpoint or a percentage change \
+  from two stated numbers is arithmetic, not estimation: do that.
+- If the document does not state something, write "Not disclosed" rather than \
+  guessing. In the guidance bridge this matters: a prior guide the company gave but \
+  this document does not restate is "Not stated in this document", never "No prior \
+  guide", which claims the company never guided.
+- A change is a comparison. If the prior value is unknown, the change column reads \
+  "New guide" or "Not comparable". Never write "Raised" or "Cut" against an unknown \
+  prior, and never restate the current midpoint as though it were the change.
 - Quotes are verbatim and attributed, and the context field must be right: an answer \
   in the Q&A session is unscripted and carries more weight than prepared remarks.
 - Keep units consistent within a field. Use the company's own convention for the \
   figure, and write negatives in parentheses, as (4.3)%, the way a note does.
+- Label the basis whenever it is not plain reported: constant currency as "cc", \
+  organic, adjusted, pro forma. Where the company gives both reported and constant \
+  currency, give both rather than silently choosing one, because a reported level \
+  next to a constant-currency growth rate does not reconcile.
 - State the calendar months behind the fiscal label whenever the document makes them \
   derivable. Fiscal years differ by company and the reader cannot be expected to know.
 - disclosure_read describes the tone of what management disclosed. It is not a view \
@@ -573,7 +596,10 @@ Write the part of the memo that the company's own disclosure can support.
 
 Rules:
 - Every claim rests on the document. Cite the figure or the language that supports it.
+- Use only figures the company states or confirms. A number an analyst puts into a \
+  question is not disclosure unless management confirms it.
 - Never estimate, extrapolate, or invent a number.
+- Label the basis where it is not plain reported: cc, organic, adjusted, pro forma.
 - No valuation, price target, multiple, or recommendation to buy or sell. You do \
   not know the share price and must not imply one.
 - The bull and bear cases are what the disclosure itself supports on each side, \
