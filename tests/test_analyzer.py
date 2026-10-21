@@ -175,3 +175,11 @@ class TestSourcingDiscipline:
     def test_reporting_basis_must_be_labelled(self):
         assert "constant currency" in analyzer.ANALYSIS_SYSTEM
         assert "does not reconcile" in analyzer.ANALYSIS_SYSTEM
+
+
+def test_eps_is_named_as_a_required_row_when_disclosed():
+    # A live run returned gross profit and SG&A but omitted EPS, which is the
+    # first number anyone looks for.
+    description = analyzer.ANALYSIS_SCHEMA["properties"]["financial_summary"]["description"]
+    assert "earnings per share" in description
+    assert "GAAP and adjusted EPS" in description

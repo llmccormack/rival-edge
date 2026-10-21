@@ -187,11 +187,14 @@ ANALYSIS_SCHEMA: dict[str, Any] = {
                 "additionalProperties": False,
             },
             "description": (
-                "4 to 6 rows of the headline financials a PM scans first: revenue, "
-                "earnings, margin or operating ratio, and the operating driver that "
-                "matters for this business. Reported figures only. Where only a change "
-                "is disclosed and no level, put it in change and write 'Not disclosed' "
-                "for current and prior rather than repeating it across columns."
+                "4 to 6 rows of the headline financials a PM scans first. Revenue and "
+                "earnings per share come first whenever the document discloses them, "
+                "including both GAAP and adjusted EPS where both are given: EPS is a "
+                "headline number and its absence from this table is a defect. Then the "
+                "margin or operating ratio, and the operating driver that matters for "
+                "this business. Reported figures only. Where only a change is disclosed "
+                "and no level, put it in change and write 'Not disclosed' for current "
+                "and prior rather than repeating it across columns."
             ),
         },
         "revenue_performance": {"type": "string"},
