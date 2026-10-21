@@ -147,3 +147,9 @@ class TestAnalyticalContract:
         assert "no price or valuation data" in analyzer.ANALYSIS_SYSTEM
         assert "must not imply one" in analyzer.MEMO_SYSTEM
         assert "No valuation, price target" in analyzer.MEMO_SYSTEM
+
+
+def test_period_label_is_a_label_not_a_sentence():
+    # It renders inline in the masthead, so it has to stay short.
+    description = analyzer.ANALYSIS_SCHEMA["properties"]["calendar_period"]["description"]
+    assert "Under 20" in description and "not a sentence" in description

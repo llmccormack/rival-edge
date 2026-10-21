@@ -163,9 +163,10 @@ ANALYSIS_SCHEMA: dict[str, Any] = {
         "calendar_period": {
             "type": "string",
             "description": (
-                "The months the fiscal period covers, e.g. 'Jul-Sep 2025'. Fiscal years "
-                "differ by company, so this removes the ambiguity. 'Not stated' if the "
-                "document does not make it derivable."
+                "Just the months the fiscal period covers, e.g. 'Jul-Sep 2025'. Under 20 "
+                "characters: a label, not a sentence, and no commentary about the call "
+                "date. Fiscal years differ by company, so this removes the ambiguity. "
+                "'Not stated' if the document does not make it derivable."
             ),
         },
         "company_overview": {
